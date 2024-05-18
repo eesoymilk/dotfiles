@@ -1,5 +1,14 @@
 # eesoymilk's dotfiles
 
+This repository is inspired by [dreamsofcode](https://www.youtube.com/@dreamsofcode) and [typecraft](https://www.youtube.com/@typecraft_dev).
+Here's the YouTube videos for reference:
+
+- [Stow has forever changed the way I manage my dotfiles](https://www.youtube.com/watch?v=y6XCebnB9gs)
+- [This Zsh config is perhaps my favorite one yet.](https://www.youtube.com/watch?v=ud7YxC33Z3w)
+- [zoxide has forever improved the way I navigate in the terminal.](https://www.youtube.com/watch?v=aghxkpyRVDY)
+- [Neovim for Newbs.](https://www.youtube.com/playlist?list=PLsz00TDipIffreIaUNk64KxTIkQaGguqn)
+- [Tmux has forever changed the way I write code.](https://www.youtube.com/watch?v=DzNmUNvnB04)
+
 > Note that the instructions is based on WSL2 running Ubuntu 22.04 LTS.
 
 ## Requirements
@@ -79,6 +88,12 @@ nvim
 
 ```bash
 sudo apt install tmux
+```
+
+### [Tmux Plugin Manager](https://github.com/tmux-plugins/tpm)
+
+```bash
+git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 ```
 
 ### [zoxide](https://github.com/ajeetdsouza/zoxide)
