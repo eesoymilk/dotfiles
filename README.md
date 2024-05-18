@@ -59,7 +59,7 @@ git pull
 
 ### [NeoVim](https://github.com/neovim/neovim/blob/master/INSTALL.md)
 
-> It is recommended to install using the [latest AppImage](https://github.com/neovim/neovim/blob/master/INSTALL.md#appimage-universal-linux-package)
+> It is recommended to install using [the latest AppImage](https://github.com/neovim/neovim/blob/master/INSTALL.md#appimage-universal-linux-package).
 
 ```bash
 curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
@@ -98,7 +98,7 @@ git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 
 ### [zoxide](https://github.com/ajeetdsouza/zoxide)
 
-> It is recommended to install zoxide via [the install script](https://github.com/ajeetdsouza/zoxide?tab=readme-ov-file#installation):
+> It is recommended to install zoxide via [the install script](https://github.com/ajeetdsouza/zoxide?tab=readme-ov-file#installation).
 
 ```bash
 curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
