@@ -70,6 +70,9 @@ zstyle ':completion:*' menu no
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
 zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 
+# Path
+export PATH="$HOME/.local/bin:/opt/nvim:/usr/local/go/bin:$PATH"
+
 # Aliases
 alias ls='ls --color'
 alias vim='nvim'
@@ -78,6 +81,6 @@ alias c='clear'
 # Shell integrations
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 eval "$(fzf --zsh)"
-# eval "$(zoxide init --cmd cd zsh)"
+eval "$(zoxide init --cmd cd zsh)"
 
 
