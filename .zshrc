@@ -77,6 +77,9 @@ export PATH="$HOME/.local/bin:/opt/nvim:/usr/local/go/bin:$PATH"
 alias ls='ls --color'
 alias vim='nvim'
 alias c='clear'
+alias gs='git status'
+alias gc='git commit'
+alias gp='git push'
 
 # Shell integrations
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
