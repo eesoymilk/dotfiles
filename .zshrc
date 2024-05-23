@@ -73,6 +73,9 @@ zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 # Path
 export PATH="$HOME/.local/bin:/opt/nvim:/usr/local/go/bin:$PATH"
 
+# Exports
+export EDITOR=nvim
+
 # Aliases
 alias ls='ls --color'
 alias vim='nvim'
@@ -89,4 +92,18 @@ alias gp='git push'
 eval "$(fzf --zsh)"
 eval "$(zoxide init --cmd cd zsh)"
 
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/Users/qiyoudaoyi/anaconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/Users/qiyoudaoyi/anaconda3/etc/profile.d/conda.sh" ]; then
+        . "/Users/qiyoudaoyi/anaconda3/etc/profile.d/conda.sh"
+    else
+        export PATH="/Users/qiyoudaoyi/anaconda3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
 
