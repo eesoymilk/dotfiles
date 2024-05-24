@@ -116,5 +116,6 @@ cd ~/.dotfiles
 Then, use GNU stow to create symlinks:
 
 ```bash
+mkdir -p ~/.config # Create the config directory since we only want to symlink the contents of the config directory
 stow .
 ```
