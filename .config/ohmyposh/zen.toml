@@ -87,4 +87,3 @@ console_title_template = '{{ .Shell }} in {{ .Folder }}'
 
 [palette]
 gray = '#5C6370'
-python = '#3572A5'
