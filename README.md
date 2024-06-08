@@ -40,6 +40,12 @@ sudo apt install zsh
 chsh -s $(which zsh) # Change default shell to zsh
 ```
 
+### [Oh My Posh](https://ohmyposh.dev/)
+
+```bash
+curl -s https://ohmyposh.dev/install.sh | bash -s
+```
+
 ### [fzf](https://github.com/junegunn/fzf)
 
 > It is recommended to install [using git](https://github.com/junegunn/fzf?tab=readme-ov-file#using-git) since package managers may not have the latest version.
