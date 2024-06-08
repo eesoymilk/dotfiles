@@ -10,6 +10,18 @@ console_title_template = '{{ .Shell }} in {{ .Folder }}'
   newline = true
 
   [[blocks.segments]]
+    type = 'python'
+    style = 'plain'
+    foreground = 'yellow'
+    background = 'transparent'
+    template = ' {{ if .Error }}{{ .Error }}{{ else }}{{ if .Venv }}{{ .Venv }} {{ end }}{{ .Full }}{{ end }} '
+
+    [blocks.segments.properties]
+      display_mode = 'environment'
+      fetch_virtual_env = true
+      home_enabled = true
+
+  [[blocks.segments]]
     type = 'path'
     style = 'plain'
     background = 'transparent'
@@ -55,7 +67,7 @@ console_title_template = '{{ .Shell }} in {{ .Folder }}'
     style = 'plain'
     foreground_templates = [
       "{{if gt .Code 0}}red{{end}}",
-      "{{if eq .Code 0}}magenta{{end}}",
+      "{{if eq .Code 0}}blue{{end}}",
     ]
     background = 'transparent'
     template = '❯'
@@ -63,13 +75,16 @@ console_title_template = '{{ .Shell }} in {{ .Folder }}'
 [transient_prompt]
   foreground_templates = [
     "{{if gt .Code 0}}red{{end}}",
-    "{{if eq .Code 0}}magenta{{end}}",
+    "{{if eq .Code 0}}blue{{end}}",
   ]
   background = 'transparent'
   template = '❯ '
 
 [secondary_prompt]
-  foreground = 'magenta'
+  foreground = 'blue'
   background = 'transparent'
   template = '❯❯ '
 
+[palette]
+gray = '#5C6370'
+python = '#3572A5'
