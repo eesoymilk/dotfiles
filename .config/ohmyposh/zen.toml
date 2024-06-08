@@ -10,6 +10,19 @@ console_title_template = '{{ .Shell }} in {{ .Folder }}'
   newline = true
 
   [[blocks.segments]]
+    type = "os"
+    style = "plain"
+    foreground_templates = [
+      "{{if gt .Code 0}}red{{end}}",
+      "{{if eq .Code 0}}blue{{end}}",
+    ]
+    background = "transparent"
+    template = "{{.Icon}} "
+
+    [blocks.segments.properties]
+      macos = "mac"
+
+  [[blocks.segments]]
     type = 'python'
     style = 'plain'
     foreground = 'yellow'
@@ -70,7 +83,7 @@ console_title_template = '{{ .Shell }} in {{ .Folder }}'
       "{{if eq .Code 0}}blue{{end}}",
     ]
     background = 'transparent'
-    template = '❯'
+    template = '❯ '
 
 [transient_prompt]
   foreground_templates = [
