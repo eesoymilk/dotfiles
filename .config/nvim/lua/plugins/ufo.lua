@@ -4,6 +4,8 @@ return {
 	keys = {
 		{ "zR", require("ufo").openAllFolds, desc = "Open all folds." },
 		{ "zM", require("ufo").closeAllFolds, desc = "Close all folds." },
+		{ "zr", require("ufo").openFoldsExceptKinds, desc = "Open fold." },
+		{ "zm", require("ufo").closeFoldsWith, desc = "Close fold." },
 	},
 	config = function()
 		vim.o.foldcolumn = "1" -- '0' is not bad
