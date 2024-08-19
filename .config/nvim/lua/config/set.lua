@@ -7,8 +7,13 @@ vim.opt.guicursor = {
 	"sm:block-blinkwait175-blinkoff150-blinkon175",
 }
 
+vim.scriptencoding = "utf-8"
+vim.opt.encoding = "utf-8"
+vim.opt.fileencoding = "utf-8"
+
 vim.opt.nu = true
 vim.opt.relativenumber = true
+vim.opt.title = true
 
 vim.opt.tabstop = 4
 vim.opt.softtabstop = 4

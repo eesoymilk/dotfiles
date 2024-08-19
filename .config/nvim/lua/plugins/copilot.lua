@@ -1,8 +1,19 @@
 return {
-    'github/copilot.vim',
-    command = 'Copilot',
-    events = 'BufEnter',
-    config = function()
-        vim.cmd('Copilot setup')
-    end,
+    {
+        "zbirenbaum/copilot.lua",
+        command = "Copilot",
+        event = "InsertEnter",
+        opts = {
+            panel = { enabled = false },
+            suggestion = { enabled = false },
+            filetypes = {
+                markdown = true,
+                gitcommit = true,
+            },
+        },
+    },
+    {
+        "zbirenbaum/copilot-cmp",
+        config = true,
+    },
 }
