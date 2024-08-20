@@ -1,7 +1,11 @@
 return {
-	"numToStr/Comment.nvim",
-	lazy = false,
-	config = function(_, opts)
-		require("Comment").setup(opts)
-	end,
+  "JoosepAlviste/nvim-ts-context-commentstring",
+  {
+    "numToStr/Comment.nvim",
+    opts = {
+      pre_hook = function()
+        return vim.bo.commentstring
+      end,
+    },
+  },
 }
