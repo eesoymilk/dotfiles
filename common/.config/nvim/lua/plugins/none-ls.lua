@@ -7,9 +7,9 @@ return {
 			function()
 				vim.lsp.buf.format({
 					async = false,
-					filter = function(client)
-						return client.name == "null-ls"
-					end,
+					-- filter = function(client)
+					-- 	return client.name == "null-ls"
+					-- end,
 				})
 			end,
 			desc = "Format",
@@ -19,11 +19,10 @@ return {
 		local null_ls = require("null-ls")
 		local augroup = vim.api.nvim_create_augroup("LspFormatting", {})
 		return {
+			debug = true,
 			sources = {
 				null_ls.builtins.formatting.stylua,
-				null_ls.builtins.formatting.prettierd.with({
-					extra_filetypes = { "astro", "svelte" },
-				}),
+				null_ls.builtins.formatting.prettier,
 				null_ls.builtins.formatting.rustywind.with({
 					extra_filetypes = { "astro" },
 				}),

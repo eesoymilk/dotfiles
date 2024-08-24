@@ -11,6 +11,7 @@ vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile", "FileType" }, {
       "vue",
       "svelte",
       "json",
+      "jsonc",
       "yaml",
       "lua",
       "typescriptreact",
