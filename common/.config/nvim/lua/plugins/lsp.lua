@@ -134,13 +134,14 @@ return {
 			require("mason").setup({})
 			require("mason-lspconfig").setup({
 				ensure_installed = {
-					"tsserver",
+					"ts_ls",
 					"clangd",
 					"rust_analyzer",
 					"eslint",
 					"lua_ls",
 					"svelte",
 					"tailwindcss",
+					"jdtls",
 				},
 				handlers = {
 					function(server_name)
@@ -153,8 +154,8 @@ return {
 							end,
 						})
 					end,
-					tsserver = function()
-						require("lspconfig").tsserver.setup({
+					ts_ls = function()
+						require("lspconfig").ts_ls.setup({
 							root_dir = function(...)
 								return require("lspconfig.util").root_pattern(".git")(...)
 							end,
