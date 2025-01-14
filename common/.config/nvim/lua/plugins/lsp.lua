@@ -142,6 +142,7 @@ return {
 					"svelte",
 					"tailwindcss",
 					"jdtls",
+					"texlab",
 				},
 				handlers = {
 					function(server_name)
