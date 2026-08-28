@@ -1,0 +1,19 @@
+# E2E test: fresh Ubuntu -> ./install.sh --bootstrap -> verify.
+# Build from the repo root:
+#   docker build -f tests/Dockerfile.ubuntu -t dotfiles-test-ubuntu .
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update -qq && \
+    apt-get install -y --no-install-recommends sudo git ca-certificates curl locales && \
+    locale-gen en_US.UTF-8 && \
+    useradd -m -s /bin/bash tester && \
+    printf 'tester ALL=(ALL) NOPASSWD:ALL\nDefaults env_keep += "DEBIAN_FRONTEND"\n' > /etc/sudoers.d/tester
+
+ENV LANG=en_US.UTF-8
+COPY --chown=tester:tester . /home/tester/dotfiles
+USER tester
+WORKDIR /home/tester/dotfiles
+
+RUN ./install.sh --bootstrap || echo "bootstrap reported failed steps (see summary above)"
+RUN ./tests/verify.sh

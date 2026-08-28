@@ -1,0 +1,86 @@
+# Herdr configuration
+# Docs: https://herdr.dev/docs/configuration/
+# Full defaults: `herdr --default-config`
+# Apply live: `herdr server reload-config` (or prefix+shift+r)
+
+# Skip first-run notification onboarding; notifications are configured below.
+onboarding = false
+
+[theme]
+# Match tmux/ghostty Catppuccin Mocha.
+name = "catppuccin"
+
+[keys]
+# Same prefix as tmux for muscle memory.
+prefix = "ctrl+a"
+
+# Mirror tmux split: prefix+- horizontal (default), keep prefix+v vertical.
+split_horizontal = "prefix+minus"
+# Move the focused pane around the layout, shifted hjkl mirroring focus_pane_*.
+swap_pane_left = "prefix+shift+h"
+swap_pane_down = "prefix+shift+j"
+swap_pane_up = "prefix+shift+k"
+swap_pane_right = "prefix+shift+l"
+
+# Jump straight to agent row N in the sidebar.
+focus_agent = "prefix+alt+1..9"
+
+# goto stays at herdr's default prefix+g (fuzzy jump picker).
+# TUI popups on the prefix+alt layer, matching herdr's documented example.
+[[keys.command]]
+key = "prefix+alt+g"
+type = "popup"
+command = "lazygit"
+width = "90%"
+height = "90%"
+description = "lazygit"
+
+[[keys.command]]
+key = "prefix+alt+d"
+type = "popup"
+command = "lazydocker"
+width = "90%"
+height = "90%"
+description = "lazydocker"
+
+[[keys.command]]
+key = "prefix+alt+y"
+type = "popup"
+command = "yazi"
+width = "90%"
+height = "90%"
+description = "yazi file manager"
+
+# Launch Claude Code in auto permission mode in a new pane.
+[[keys.command]]
+key = "prefix+alt+c"
+type = "pane"
+command = "claude --permission-mode auto"
+description = "claude (auto)"
+
+[ui]
+# Full-width panes when a workspace has only one tab; sidebar still shows tabs.
+hide_tab_bar_when_single_tab = true
+
+# Hide pane scrollbars and reclaim their reserved column.
+pane_scrollbars = false
+
+# Tab row below panes, tmux-style.
+tab_bar_position = "bottom"
+
+# Attention queue: blocked agents bubble to the top of the sidebar.
+agent_panel_sort = "priority"
+
+# Show detected agent names on split pane borders.
+show_agent_labels_on_pane_borders = true
+
+[ui.toast]
+# Desktop notification when a background agent blocks or finishes.
+delivery = "system"
+
+[experimental]
+# Keep recent pane screen history across full server restarts.
+pane_history = true
+# Kitty graphics passthrough so yazi/image previews render inside herdr.
+# Requires a Kitty graphics-compatible outer terminal (ghostty is).
+kitty_graphics = true

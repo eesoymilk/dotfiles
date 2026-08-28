@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Project sessionizer: fzf over known dirs, attach/create a tmux session.
+# Bound to prefix+f inside tmux; also runnable as `tms` from any shell.
+set -euo pipefail
+
+if [[ $# -eq 1 ]]; then
+    selected=$1
+else
+    selected=$({
+        fd --min-depth 1 --max-depth 1 --type d . "$HOME/Codes" 2>/dev/null
+        echo "$HOME/dotfiles"
+        fd --min-depth 1 --max-depth 1 --type d . "$HOME/.config" 2>/dev/null
+    } | fzf --prompt='session ▸ ' --height=40% --reverse)
+fi
+
+[[ -z $selected ]] && exit 0
+
+selected_name=$(basename "$selected" | tr ' .:' '___')
+tmux_running=$(pgrep tmux || true)
+
+if [[ -z ${TMUX:-} && -z $tmux_running ]]; then
+    exec tmux new-session -s "$selected_name" -c "$selected"
+fi
+
+if ! tmux has-session -t="$selected_name" 2>/dev/null; then
+    tmux new-session -ds "$selected_name" -c "$selected"
+fi
+
+if [[ -z ${TMUX:-} ]]; then
+    exec tmux attach -t "$selected_name"
+else
+    tmux switch-client -t "$selected_name"
+fi
