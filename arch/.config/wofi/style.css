@@ -1,0 +1,85 @@
+* {
+  font-family: "JetBrainsMono Nerd Font", "Font Awesome 6", monospace;
+  font-size: 14px;
+}
+
+#window {
+  margin: 0px;
+  border-radius: 12px;
+  border: 2px solid;
+  border-image: linear-gradient(45deg, #89dceb, #94e2d5) 1;
+  background-color: rgba(30, 30, 46, 0.95);
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+#input {
+  padding: 12px 20px;
+  background-color: rgba(49, 50, 68, 0.8);
+  color: #cdd6f4;
+  border: 2px solid rgba(137, 220, 235, 0.3);
+  border-radius: 8px;
+  margin: 10px 0px 15px 0px;
+  font-size: 15px;
+}
+
+#input:focus {
+  border: 2px solid #89dceb;
+  outline: none;
+}
+
+#inner-box {
+  margin-right: 12px;
+  padding: 4px;
+  background-color: transparent;
+}
+
+#outer-box {
+  margin: 5px;
+  padding: 5px;
+}
+
+#scroll {
+  margin: 0px;
+  padding: 0px;
+  background-color: transparent;
+}
+
+#img {
+  margin-right: 12px;
+  padding: 5px;
+}
+
+#entry {
+  padding: 10px 12px;
+  margin: 4px 0px;
+  border-radius: 8px;
+  background-color: transparent;
+  color: #cdd6f4;
+  transition: all 0.2s ease;
+}
+
+#entry:hover {
+  background-color: rgba(137, 220, 235, 0.15);
+}
+
+#entry:selected {
+  background: linear-gradient(90deg, rgba(137, 220, 235, 0.3), rgba(148, 226, 213, 0.3));
+  border-left: 3px solid #89dceb;
+  color: #cdd6f4;
+  font-weight: bold;
+}
+
+#text {
+  color: #cdd6f4;
+  padding: 0px 8px;
+}
+
+#text:selected {
+  color: #cdd6f4;
+  background-color: transparent;
+}
+
+#img:selected {
+  background-color: transparent;
+}

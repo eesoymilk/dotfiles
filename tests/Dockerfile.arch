@@ -1,0 +1,17 @@
+# E2E test: fresh Arch -> ./install.sh --bootstrap -> verify.
+# SKIP_DESKTOP=1 keeps Hyprland and friends out of the container.
+# Build from the repo root:
+#   docker build -f tests/Dockerfile.arch -t dotfiles-test-arch .
+FROM archlinux:latest
+
+RUN pacman -Syu --noconfirm sudo git ca-certificates curl && \
+    useradd -m -s /bin/bash tester && \
+    printf 'tester ALL=(ALL) NOPASSWD:ALL\nDefaults env_keep += "SKIP_DESKTOP"\n' > /etc/sudoers.d/tester
+
+COPY --chown=tester:tester . /home/tester/dotfiles
+USER tester
+WORKDIR /home/tester/dotfiles
+
+ENV SKIP_DESKTOP=1
+RUN ./install.sh --bootstrap || echo "bootstrap reported failed steps (see summary above)"
+RUN ./tests/verify.sh

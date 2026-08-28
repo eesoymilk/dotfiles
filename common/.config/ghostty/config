@@ -1,0 +1,12 @@
+font-family = JetBrainsMono Nerd Font
+font-size = 24
+window-padding-x = 8 
+window-padding-y = 4
+background = #1e1e2e
+background-opacity = 0.85
+background-blur = true
+
+keybind = shift+enter=text:\n
+
+# Per-OS overrides; the machine's stow package provides os.conf (optional).
+config-file = ?os.conf
