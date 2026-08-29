@@ -1,6 +1,6 @@
 ---
 name: big-task
-description: Run a large multi-part task end to end - grill the user into a self-contained spec, split it across N parallel Claude agents in herdr, coordinate them live, and deliver a clean report. Use when the request bundles many features/bugfixes/investigations that would degrade a single agent.
+description: Run a large multi-part task end to end - grill the user into a self-contained spec, split it across N parallel Claude or Codex agents in herdr, coordinate them live, and deliver a clean report. Use when the request bundles many features/bugfixes/investigations that would degrade a single agent.
 ---
 
 # Big Task
@@ -95,12 +95,18 @@ Prefer the same checkout when the partition already makes it safe; it is less se
 
 Mixing is fine - research agents in the main checkout, implementers in worktrees.
 
+Then decide the agent kind, per agent: `claude` (default) or `codex`.
+Use codex only when the user asks for it, for all agents or for specific ones; mixing kinds is fine.
+Both read the same SPEC.md, get the same briefing, and follow the same protocol.
+The kind must be installed on PATH (`command -v codex`); if it is not, say so at the gate instead of failing at spawn.
+
 Write `TASKS.md` beside the spec:
 
 ```markdown
 # Tasks
 
 ## agent-1: <short name>
+- Kind: claude / codex
 - Isolation: worktree `agent-1-<slug>` / same-branch
 - Owns: <exact files or directories>
 - Must not touch: <files owned by others>
@@ -114,7 +120,7 @@ Be exact. Directories are fine; vague areas are not.
 
 ## Phase 4 - Gate, then fan out
 
-**Stop and show the user** the split before spawning anything: N, each agent's scope, isolation choice, and the reasoning.
+**Stop and show the user** the split before spawning anything: N, each agent's scope, kind, isolation choice, and the reasoning.
 Wait for approval.
 Skip this gate only if the user said to launch without asking.
 
@@ -149,17 +155,17 @@ Lay panes out so the user can watch progress without hunting:
 
 ### Spawning
 
-For each agent: get a pane in its working directory, start Claude in it, then prompt it.
+For each agent: get a pane in its working directory, start the agent in it, then prompt it.
 Read pane and agent IDs from the JSON each command returns; never predict them.
 
 ```bash
-herdr agent start <agent-name> --kind claude --pane <pane-id>
+herdr agent start <agent-name> --kind claude --pane <pane-id>   # or --kind codex
 herdr agent prompt <agent-name> "<briefing>" --wait --until working
 ```
 
 Agent names must match `[a-z][a-z0-9_-]{0,31}` and be unique among live agents; make them meaningful.
-Never pass `--permission-mode`.
-Never instruct an agent to change its permission mode.
+Never pass permission, approval, or sandbox flags to any agent kind: no `--permission-mode` for claude, no `--ask-for-approval`, `--sandbox`, `--full-auto`, or bypass flags for codex.
+The machine's configured default for each tool applies; never instruct an agent to change it after launch.
 
 Each briefing must contain, inline:
 - The absolute path to `SPEC.md` and an instruction to read it first.
@@ -272,7 +278,7 @@ Leave nothing running when the task is done.
 ## Rules
 
 - Never commit or push. Not you, not the agents.
-- Never pass `--permission-mode` to a spawned agent, and never toggle it after launch.
+- Never pass permission, approval, or sandbox flags to a spawned agent of any kind, and never toggle them after launch.
 - Never let an agent claim done without real verification output, and never report done without your own.
 - Never end your turn with agents still running.
 - The spec is authoritative: if an agent's question is answered there, answer it yourself.
