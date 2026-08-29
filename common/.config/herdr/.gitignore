@@ -2,3 +2,4 @@
 *.sock
 session.json
 session-history.json
+release-notes.json
