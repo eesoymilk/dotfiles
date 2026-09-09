@@ -284,9 +284,11 @@ install_delta() {
 }
 
 # ---------------------------------------------------------------------- gh
-# Official (cli.github.com): GitHub's apt repository.
+# Official (cli.github.com): GitHub's apt repository. Ubuntu's own gh package
+# lags far enough behind that GitHub's API rejects its queries, so the guard is
+# on the repository, not the binary.
 install_gh() {
-	if have gh; then
+	if [ -f /etc/apt/sources.list.d/github-cli.list ]; then
 		echo "  already present"
 		return 0
 	fi
