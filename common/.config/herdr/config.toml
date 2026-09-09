@@ -10,6 +10,7 @@ onboarding = false
 # Match tmux/ghostty Catppuccin Mocha.
 name = "catppuccin"
 
+auto_switch = false
 [keys]
 # Same prefix as tmux for muscle memory.
 prefix = "ctrl+a"
