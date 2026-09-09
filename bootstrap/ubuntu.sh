@@ -80,7 +80,7 @@ install_apt() {
 		zsh stow tmux git curl wget unzip tar gzip ca-certificates gnupg \
 		build-essential pkg-config \
 		fd-find bat ripgrep jq file \
-		wl-clipboard \
+		wl-clipboard xclip \
 		python3 python3-venv
 
 	# Ubuntu renames both binaries to avoid collisions with older packages.
