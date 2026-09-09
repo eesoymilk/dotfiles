@@ -255,15 +255,18 @@ install_lazygit() {
 	fi
 }
 
-# --------------------------------------------------------------- lazydocker
-# Official (lazydocker README): the upstream install script.
-install_lazydocker() {
-	if have lazydocker; then
+# ------------------------------------------------------------------- oxker
+# Official (oxker README): the upstream install script. It downloads into the
+# current directory and installs to ~/.local/bin (which is $BIN), so run it
+# from a temp dir to keep the droppings out of $PWD.
+install_oxker() {
+	if have oxker; then
 		echo "  already present"
 		return 0
 	fi
-	curl -fsSL https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh |
-		DIR="$BIN" bash
+	tmp=$(mktemp -d)
+	(cd "$tmp" && curl -fsSL https://raw.githubusercontent.com/mrjackwills/oxker/main/install.sh | bash)
+	rm -rf "$tmp"
 }
 
 # -------------------------------------------------------------- git-delta
@@ -404,7 +407,7 @@ step "fzf (official git method)" install_fzf
 step "zoxide (official install script)" install_zoxide
 step "oh-my-posh (official install script)" install_oh_my_posh
 step "lazygit (apt, else official release recipe)" install_lazygit
-step "lazydocker (official install script)" install_lazydocker
+step "oxker (official install script)" install_oxker
 step "git-delta (official .deb)" install_delta
 step "GitHub CLI (official apt repository)" install_gh
 step "nvm (official install script)" install_nvm
@@ -424,7 +427,7 @@ step "Default shell" set_default_shell
 log "Verifying tools resolve on the shell PATH"
 CHECK_PATH="$HOME/.local/bin:$HOME/.fzf/bin:/opt/nvim/bin:/usr/local/bin:/usr/local/go/bin:$PATH"
 missing=""
-for t in nvim tree-sitter tmux zsh stow fd bat eza zoxide oh-my-posh yazi ya ghostty lazygit lazydocker delta git gh rg jq; do
+for t in nvim tree-sitter tmux zsh stow fd bat eza zoxide oh-my-posh yazi ya ghostty lazygit oxker delta git gh rg jq; do
 	PATH="$CHECK_PATH" command -v "$t" >/dev/null 2>&1 || missing="$missing $t"
 done
 # Presence is not enough for fzf: an old apt build resolves fine but has no --zsh.

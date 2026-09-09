@@ -53,7 +53,7 @@ install_formulae() {
 	eval "$(/opt/homebrew/bin/brew shellenv)"
 	brew install \
 		stow tmux fzf zoxide eza bat fd ripgrep jq \
-		gh lazygit lazydocker git-delta \
+		gh lazygit oxker git-delta \
 		neovim yazi oh-my-posh tree-sitter
 }
 
@@ -107,7 +107,7 @@ log "Verifying tools resolve on the shell PATH"
 eval "$(/opt/homebrew/bin/brew shellenv)" 2>/dev/null || true
 CHECK_PATH="$HOME/.local/bin:$PATH"
 missing=""
-for t in nvim tree-sitter tmux zsh stow fd bat eza zoxide oh-my-posh yazi ya lazygit lazydocker delta git gh rg jq fzf; do
+for t in nvim tree-sitter tmux zsh stow fd bat eza zoxide oh-my-posh yazi ya lazygit oxker delta git gh rg jq fzf; do
 	PATH="$CHECK_PATH" command -v "$t" >/dev/null 2>&1 || missing="$missing $t"
 done
 PATH="$CHECK_PATH" fzf --zsh >/dev/null 2>&1 || missing="$missing fzf(--zsh-unsupported)"

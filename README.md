@@ -49,7 +49,7 @@ Bootstrap installs every tool by its officially documented method and never lets
 ### Per-OS notes
 
 - **Ubuntu**: apt where the archive is fresh enough, official repos/scripts elsewhere. Also installs Signal Desktop and the JetBrainsMono Nerd Font.
-- **Arch**: pacman for nearly everything; oh-my-posh and lazydocker use their official install scripts (AUR-only otherwise); wlogout needs an AUR helper. `SKIP_DESKTOP=1` skips the Hyprland stack. Yes, a bootstrap script for Arch - the wiki is a great read, but I have already done my rite of passage.
+- **Arch**: pacman for nearly everything; oh-my-posh and oxker use their official install scripts (AUR-only otherwise); wlogout needs an AUR helper. `SKIP_DESKTOP=1` skips the Hyprland stack. Yes, a bootstrap script for Arch - the wiki is a great read, but I have already done my rite of passage.
 - **macOS**: Homebrew for everything, casks for ghostty, aerospace, and the nerd font.
 
 ## 🧪 Tests

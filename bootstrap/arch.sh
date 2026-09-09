@@ -79,15 +79,18 @@ install_oh_my_posh() {
 	curl -s https://ohmyposh.dev/install.sh | bash -s -- -d "$BIN"
 }
 
-# -------------------------------------------------------------- lazydocker
-# AUR-only on Arch; official install script instead.
-install_lazydocker() {
-	if have lazydocker; then
+# ------------------------------------------------------------------- oxker
+# AUR-only on Arch; official install script instead. It downloads into the
+# current directory and installs to ~/.local/bin (which is $BIN), so run it
+# from a temp dir to keep the droppings out of $PWD.
+install_oxker() {
+	if have oxker; then
 		echo "  already present"
 		return 0
 	fi
-	curl -fsSL https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh |
-		DIR="$BIN" bash
+	tmp=$(mktemp -d)
+	(cd "$tmp" && curl -fsSL https://raw.githubusercontent.com/mrjackwills/oxker/main/install.sh | bash)
+	rm -rf "$tmp"
 }
 
 # --------------------------------------------------------------------- nvm
@@ -140,7 +143,7 @@ set_default_shell() {
 step "pacman packages" install_pacman
 step "Hyprland desktop stack" install_desktop
 step "oh-my-posh (official install script)" install_oh_my_posh
-step "lazydocker (official install script)" install_lazydocker
+step "oxker (official install script)" install_oxker
 step "nvm (official install script)" install_nvm
 
 hash -r
@@ -153,7 +156,7 @@ step "Default shell" set_default_shell
 log "Verifying tools resolve on the shell PATH"
 CHECK_PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
 missing=""
-for t in nvim tree-sitter tmux zsh stow fd bat eza zoxide oh-my-posh yazi ya lazygit lazydocker delta git gh rg jq fzf; do
+for t in nvim tree-sitter tmux zsh stow fd bat eza zoxide oh-my-posh yazi ya lazygit oxker delta git gh rg jq fzf; do
 	PATH="$CHECK_PATH" command -v "$t" >/dev/null 2>&1 || missing="$missing $t"
 done
 PATH="$CHECK_PATH" fzf --zsh >/dev/null 2>&1 || missing="$missing fzf(--zsh-unsupported)"

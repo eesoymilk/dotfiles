@@ -38,10 +38,10 @@ description = "lazygit"
 [[keys.command]]
 key = "prefix+alt+d"
 type = "popup"
-command = "lazydocker"
+command = "oxker"
 width = "90%"
 height = "90%"
-description = "lazydocker"
+description = "oxker"
 
 [[keys.command]]
 key = "prefix+alt+y"
