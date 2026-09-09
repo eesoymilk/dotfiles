@@ -1,0 +1,7 @@
+git:
+  diffRenderers:
+    - colorArg: always
+      # --no-gitconfig: skip the [delta] section of .config/git/config, whose
+      # side-by-side mode is too wide for lazygit's diff pane (and delta can't
+      # turn a boolean off per-invocation).
+      command: delta --dark --paging=never --line-numbers --no-gitconfig
