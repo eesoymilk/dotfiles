@@ -5,9 +5,10 @@ Common instructions for soymilk's agents across all scenarios.
 ## Guidelines
 
 - Never use the em dash "—". Use plain dash "-" instead.
-- Never commit unless explicitly asked.
+- Never commit or push unless explicitly asked. If a task seems to call for a commit or push, stop and ask first; never assume approval for one carries over to the next.
 - Never auto-add your agent name as co-author in commit messages.
 - Never modify CHANGELOG.md or auto-generated files.
+- Never leave traces of the AI session in code or comments: no dated decision notes ("Lead decision 2026-08-31"), no "as discussed", no "per user request", no "added by Claude", no references to the conversation, the PR review, or the agent. Comments describe what the code does or why it must be this way, nothing else. Code must be indistinguishable from what the user would have written by hand.
 - In long Markdown files, put each full sentence on its own line.
 - Prefer quality, simplicity, robustness, and maintainability over development cost.
 - Bug fixes: reproduce the bug E2E as an end user would hit it before fixing.
