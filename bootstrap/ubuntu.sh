@@ -81,13 +81,36 @@ install_apt() {
 		build-essential pkg-config \
 		fd-find bat ripgrep jq file \
 		wl-clipboard xclip \
-		python3 python3-venv
+		python3 python3-venv \
+		bubblewrap apparmor-profiles apparmor-utils
 
 	# Ubuntu renames both binaries to avoid collisions with older packages.
 	# The `cat=bat` alias in .zshrc and the `fd` call in tmux-sessionizer expect
 	# the upstream names, so bridge them.
 	[ -e "$BIN/fd" ] || ln -sf "$(command -v fdfind)" "$BIN/fd"
 	[ -e "$BIN/bat" ] || ln -sf "$(command -v batcat)" "$BIN/bat"
+}
+
+# ------------------------------------------------------ codex linux sandbox
+# Ubuntu 24.04 restricts unprivileged user namespaces through AppArmor.
+# OpenAI's documented fix is to load the packaged bwrap profile rather than
+# disable that host-wide restriction.
+configure_codex_sandbox() {
+	profile_source=/usr/share/apparmor/extra-profiles/bwrap-userns-restrict
+	profile_target=/etc/apparmor.d/bwrap-userns-restrict
+
+	if [ -e /.dockerenv ]; then
+		echo "  container detected; the host controls AppArmor profiles"
+		return 0
+	fi
+
+	if [ ! -f "$profile_source" ]; then
+		echo "  missing AppArmor profile: $profile_source"
+		return 1
+	fi
+
+	sudo install -m 0644 "$profile_source" "$profile_target"
+	sudo apparmor_parser -r "$profile_target"
 }
 
 # ------------------------------------------------------------------- neovim
@@ -422,6 +445,7 @@ set_default_shell() {
 
 # ------------------------------------------------------------------- run
 step "apt packages" install_apt
+step "Codex Bubblewrap AppArmor profile" configure_codex_sandbox
 step "Neovim (official tarball -> /opt/nvim-linux-$NVIM_ARCH)" install_neovim
 step "tree-sitter CLI (official release binary)" install_tree_sitter
 step "eza (official apt repository)" install_eza
