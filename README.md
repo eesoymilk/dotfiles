@@ -16,7 +16,8 @@ Every machine gets `common` plus exactly one OS package.
 
 ```
 common/     zsh core, nvim, tmux, ghostty, oh-my-posh, git, gh, yazi, herdr,
-            AGENTS.md, .claude (agents, skills, statusline)
+            AGENTS.md, .agents/skills (shared + curated Codex skills),
+            .claude (agents, statusline), .codex (config, agents)
 macos/      aerospace, brew shellenv + mac PATH (zsh pre/post hooks)
 ubuntu/     ubuntu PATH hooks
 arch/       hyprland, waybar (mechabar submodule), wofi, wlogout, waystt,
@@ -41,16 +42,35 @@ cd ~/dotfiles
 ./install.sh --bootstrap  # fresh machine: install all tools, then link
 ```
 
-`install.sh` detects the OS, stows `common` + the OS package, backs up any conflicting real files to `~/dotfiles-backup-<timestamp>/`, and links `~/.claude/CLAUDE.md` -> `~/AGENTS.md`.
-Safe to re-run.
+`install.sh` detects the OS, stows `common` + the OS package, and backs up any conflicting real files to `~/dotfiles-backup-<timestamp>/`.
+It then links `~/.claude/CLAUDE.md` and `~/.codex/AGENTS.md` -> `~/AGENTS.md`, and the shared `brainstorm` and `big-task` skills into `~/.claude/skills/`.
+Safe to re-run; credentials, session history, and caches under `~/.claude` and `~/.codex` are never touched.
 
-Bootstrap installs every tool by its officially documented method and never lets one failed step abort the rest; the summary at the end names anything that failed and re-running retries only that.
+Bootstrap installs every tool by its officially documented method (Claude Code and Codex via their standalone installers) and never lets one failed step abort the rest; the summary at the end names anything that failed and re-running retries only that.
 
 ### Per-OS notes
 
 - **Ubuntu**: apt where the archive is fresh enough, official repos/scripts elsewhere. Also installs Signal Desktop and the JetBrainsMono Nerd Font.
 - **Arch**: pacman for nearly everything; oh-my-posh and oxker use their official install scripts (AUR-only otherwise); wlogout needs an AUR helper. `SKIP_DESKTOP=1` skips the Hyprland stack. Yes, a bootstrap script for Arch - the wiki is a great read, but I have already done my rite of passage.
 - **macOS**: Homebrew for everything, casks for ghostty, aerospace, and the nerd font.
+
+## 🤖 Agents
+
+Claude Code and Codex share one instruction file and one skills directory; each client keeps its own specialist agents and UI settings.
+
+|                   | Claude Code                                                     | Codex                                                       |
+|-------------------|-----------------------------------------------------------------|-------------------------------------------------------------|
+| Instructions      | `~/.claude/CLAUDE.md` -> `~/AGENTS.md`                          | `~/.codex/AGENTS.md` -> `~/AGENTS.md`                       |
+| Skills            | `~/.claude/skills/{brainstorm,big-task}` -> `~/.agents/skills/` | `~/.agents/skills/`                                         |
+| Specialist agents | `~/.claude/agents/*.md`                                         | `~/.codex/agents/*.toml`                                    |
+| Permissions       | auto mode                                                       | on-request approvals + Auto-review, workspace-write sandbox |
+| Footer            | `~/.claude/statusline.sh`                                       | native footer                                               |
+| Herdr pane        | `prefix+alt+c`                                                  | `prefix+alt+x`                                              |
+
+- **Skills**: `common/.agents/skills` is the canonical home. `brainstorm` and `big-task` are hand-written and shared; Claude Code reaches them through the links `install.sh` creates. `gh-address-comments`, `gh-fix-ci`, `playwright`, `security-best-practices`, and `security-threat-model` are vendored from [openai/skills](https://github.com/openai/skills) for Codex, so a fresh bootstrap needs no second install step.
+- **Specialist agents**: the same five roles on both sides - Python, TypeScript, debugger, code reviewer, and Git workflow. Claude Code reads Markdown under `.claude/agents`; Codex reads TOML under `.codex/agents`.
+- **Auto-review**: `~/.codex/config.toml` sets `approval_policy = "on-request"`, `approvals_reviewer = "auto_review"`, and `sandbox_mode = "workspace-write"`, the Codex equivalent of Claude Code auto mode. It keeps `gpt-5.6-sol` at `medium` reasoning. Herdr launches plain `codex` so this file stays in charge of permissions.
+- **Footer**: Claude Code renders `statusline.sh`. Codex uses its native TUI footer showing model and reasoning, remaining context, Git branch, and current directory, in that order; it does not reuse the Claude script or layout.
 
 ## 🧪 Tests
 

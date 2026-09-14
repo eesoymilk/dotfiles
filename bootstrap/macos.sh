@@ -76,6 +76,30 @@ install_nvm() {
 		PROFILE=/dev/null bash
 }
 
+# ------------------------------------------------------------- claude code
+# Official (code.claude.com/docs/en/setup): the native installer. It puts the
+# binary in ~/.local/bin and only edits a shell rc when that directory is not
+# already on PATH, which the export at the top of this script guarantees.
+install_claude_code() {
+	if have claude; then
+		echo "  already present"
+		return 0
+	fi
+	curl -fsSL https://claude.ai/install.sh | bash
+}
+
+# ------------------------------------------------------------------- codex
+# Official (developers.openai.com/codex): the standalone installer. Same shape
+# as Claude Code: ~/.local/bin/codex, and no rc edit while $BIN is on PATH.
+# Credentials land in ~/.codex/auth.json at first login, outside the repo.
+install_codex() {
+	if have codex; then
+		echo "  already present"
+		return 0
+	fi
+	curl -fsSL https://chatgpt.com/codex/install.sh | sh
+}
+
 # ------------------------------------------------------------------- link
 link_dotfiles() {
 	"$DOTFILES/install.sh"
@@ -96,6 +120,8 @@ step "Homebrew (official install script)" install_brew
 step "brew formulae" install_formulae
 step "brew casks (ghostty, aerospace, nerd font)" install_casks
 step "nvm (official install script)" install_nvm
+step "Claude Code (official install script)" install_claude_code
+step "Codex (official install script)" install_codex
 
 hash -r
 
@@ -107,7 +133,7 @@ log "Verifying tools resolve on the shell PATH"
 eval "$(/opt/homebrew/bin/brew shellenv)" 2>/dev/null || true
 CHECK_PATH="$HOME/.local/bin:$PATH"
 missing=""
-for t in nvim tree-sitter tmux zsh stow fd bat eza zoxide oh-my-posh yazi ya lazygit oxker delta git gh rg jq fzf; do
+for t in nvim tree-sitter tmux zsh stow fd bat eza zoxide oh-my-posh yazi ya lazygit oxker delta git gh rg jq fzf claude codex; do
 	PATH="$CHECK_PATH" command -v "$t" >/dev/null 2>&1 || missing="$missing $t"
 done
 PATH="$CHECK_PATH" fzf --zsh >/dev/null 2>&1 || missing="$missing fzf(--zsh-unsupported)"
@@ -133,6 +159,7 @@ cat <<'EOF'
   2. Start tmux once; TPM auto-clones and installs plugins
   3. nvm install --lts
   4. Set your terminal font to "JetBrainsMono Nerd Font"
+  5. Run `claude` and `codex` once each to log in
 EOF
 
 if [ "${#STEPS_FAILED[@]}" -gt 0 ]; then

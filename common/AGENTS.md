@@ -19,4 +19,6 @@ Common instructions for soymilk's agents across all scenarios.
 - Verify before claiming done: run tests/lint, state actual results.
 - Python: uv, full type hints, ruff, pyright, pytest.
 - TypeScript: pnpm, strictest tsconfig, zod, vitest.
-- When spawning claude instances (herdr or otherwise): never pass --permission-mode and never toggle the permission mode after launch (no shift+tab, no /permissions). The global default is "auto" mode - leave it. Do NOT switch spawned agents to acceptEdits.
+- When spawning agent instances (herdr or otherwise), never override the user's permission setup from the command line or after launch; the global config already sets the intended default - leave it.
+  - Claude Code: never pass --permission-mode and never toggle the permission mode after launch (no shift+tab, no /permissions). The global default is "auto" mode. Do NOT switch spawned agents to acceptEdits.
+  - Codex: launch plain `codex`. Never pass --ask-for-approval, --sandbox, --approve-for-me, --dangerously-bypass-approvals-and-sandbox, or -c overrides for approval_policy, approvals_reviewer, or sandbox_mode; ~/.codex/config.toml sets on-request approval with Auto-review and a workspace-write sandbox.

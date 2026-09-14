@@ -49,11 +49,38 @@ link_into_repo "$HOME/.config/ohmyposh" "~/.config/ohmyposh"
 link_into_repo "$HOME/.config/zsh/pre.zsh" "~/.config/zsh/pre.zsh (from $OS_PKG)"
 link_into_repo "$HOME/.config/zsh/post.zsh" "~/.config/zsh/post.zsh (from $OS_PKG)"
 link_into_repo "$HOME/.claude/agents" "~/.claude/agents"
-# ~/.claude/skills may be a real dir holding machine-local skills; assert a
-# repo-provided skill resolves rather than the directory itself.
-link_into_repo "$HOME/.claude/skills/big-task" "~/.claude/skills/big-task"
 link_into_repo "$HOME/.claude/CLAUDE.md" "~/.claude/CLAUDE.md"
 link_into_repo "$HOME/.local/bin/tmux-sessionizer" "~/.local/bin/tmux-sessionizer"
+
+# ~/.agents/skills is a real dir holding machine-local skills too, so assert
+# each repo-provided skill rather than the directory. The first two are shared
+# with Claude Code through ~/.claude/skills; the rest are Codex-only.
+SHARED_SKILLS="brainstorm big-task"
+CODEX_SKILLS="gh-address-comments gh-fix-ci playwright security-best-practices security-threat-model"
+for s in $SHARED_SKILLS $CODEX_SKILLS; do
+	link_into_repo "$HOME/.agents/skills/$s" "~/.agents/skills/$s"
+done
+for s in $SHARED_SKILLS; do
+	link_into_repo "$HOME/.claude/skills/$s" "~/.claude/skills/$s"
+done
+for s in $CODEX_SKILLS; do
+	if [ -e "$HOME/.claude/skills/$s" ] || [ -L "$HOME/.claude/skills/$s" ]; then
+		fail "~/.claude/skills/$s is absent (Codex-only skill)"
+	else
+		pass "~/.claude/skills/$s is absent (Codex-only skill)"
+	fi
+done
+
+link_into_repo "$HOME/.codex/AGENTS.md" "~/.codex/AGENTS.md"
+link_into_repo "$HOME/.codex/config.toml" "~/.codex/config.toml"
+codex_agents=("$DOTFILES"/common/.codex/agents/*.toml)
+if [ -e "${codex_agents[0]}" ]; then
+	for f in "${codex_agents[@]}"; do
+		link_into_repo "$HOME/.codex/agents/$(basename "$f")" "~/.codex/agents/$(basename "$f")"
+	done
+else
+	fail "common/.codex/agents contains at least one agent TOML"
+fi
 
 if [ -x "$HOME/.local/bin/tmux-sessionizer" ]; then
 	pass "tmux-sessionizer is executable"
@@ -61,12 +88,16 @@ else
 	fail "tmux-sessionizer is executable"
 fi
 
-# ~/.config must stay a real directory, never a symlink into the repo.
-if [ -d "$HOME/.config" ] && [ ! -L "$HOME/.config" ]; then
-	pass "~/.config is a real directory"
-else
-	fail "~/.config is a real directory"
-fi
+# These must stay real directories, never symlinks into the repo: apps write
+# runtime state next to the stowed files (Codex keeps auth.json and sqlite
+# databases in ~/.codex, both CLIs keep machine-local skills).
+for d in .config .claude .claude/skills .agents .agents/skills .codex .codex/agents; do
+	if [ -d "$HOME/$d" ] && [ ! -L "$HOME/$d" ]; then
+		pass "~/$d is a real directory"
+	else
+		fail "~/$d is a real directory"
+	fi
+done
 
 if [ "$OS_PKG" = arch ]; then
 	link_into_repo "$HOME/.config/ghostty/os.conf" "~/.config/ghostty/os.conf (arch overrides)"
@@ -77,7 +108,7 @@ fi
 echo
 echo "Tools on the shell PATH:"
 CHECK_PATH="$HOME/.local/bin:$HOME/.fzf/bin:/opt/nvim/bin:/usr/local/bin:/usr/local/go/bin:$PATH"
-for t in nvim tree-sitter tmux zsh stow fd bat eza zoxide oh-my-posh yazi ya lazygit delta git gh rg jq fzf; do
+for t in nvim tree-sitter tmux zsh stow fd bat eza zoxide oh-my-posh yazi ya lazygit delta git gh rg jq fzf claude codex; do
 	if PATH="$CHECK_PATH" command -v "$t" >/dev/null 2>&1; then
 		pass "$t"
 	else

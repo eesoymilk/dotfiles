@@ -106,6 +106,30 @@ install_nvm() {
 		PROFILE=/dev/null bash
 }
 
+# ------------------------------------------------------------- claude code
+# Official (code.claude.com/docs/en/setup): the native installer. It puts the
+# binary in ~/.local/bin and only edits a shell rc when that directory is not
+# already on PATH, which the export at the top of this script guarantees.
+install_claude_code() {
+	if have claude; then
+		echo "  already present"
+		return 0
+	fi
+	curl -fsSL https://claude.ai/install.sh | bash
+}
+
+# ------------------------------------------------------------------- codex
+# Official (developers.openai.com/codex): the standalone installer. Same shape
+# as Claude Code: ~/.local/bin/codex, and no rc edit while $BIN is on PATH.
+# Credentials land in ~/.codex/auth.json at first login, outside the repo.
+install_codex() {
+	if have codex; then
+		echo "  already present"
+		return 0
+	fi
+	curl -fsSL https://chatgpt.com/codex/install.sh | sh
+}
+
 # ------------------------------------------------------------------- link
 link_dotfiles() {
 	"$DOTFILES/install.sh"
@@ -145,6 +169,8 @@ step "Hyprland desktop stack" install_desktop
 step "oh-my-posh (official install script)" install_oh_my_posh
 step "oxker (official install script)" install_oxker
 step "nvm (official install script)" install_nvm
+step "Claude Code (official install script)" install_claude_code
+step "Codex (official install script)" install_codex
 
 hash -r
 
@@ -156,7 +182,7 @@ step "Default shell" set_default_shell
 log "Verifying tools resolve on the shell PATH"
 CHECK_PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
 missing=""
-for t in nvim tree-sitter tmux zsh stow fd bat eza zoxide oh-my-posh yazi ya lazygit oxker delta git gh rg jq fzf; do
+for t in nvim tree-sitter tmux zsh stow fd bat eza zoxide oh-my-posh yazi ya lazygit oxker delta git gh rg jq fzf claude codex; do
 	PATH="$CHECK_PATH" command -v "$t" >/dev/null 2>&1 || missing="$missing $t"
 done
 PATH="$CHECK_PATH" fzf --zsh >/dev/null 2>&1 || missing="$missing fzf(--zsh-unsupported)"

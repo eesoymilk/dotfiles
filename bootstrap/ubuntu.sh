@@ -318,6 +318,30 @@ install_nvm() {
 		PROFILE=/dev/null bash
 }
 
+# ------------------------------------------------------------- claude code
+# Official (code.claude.com/docs/en/setup): the native installer. It puts the
+# binary in ~/.local/bin and only edits a shell rc when that directory is not
+# already on PATH, which the export at the top of this script guarantees.
+install_claude_code() {
+	if have claude; then
+		echo "  already present"
+		return 0
+	fi
+	curl -fsSL https://claude.ai/install.sh | bash
+}
+
+# ------------------------------------------------------------------- codex
+# Official (developers.openai.com/codex): the standalone installer. Same shape
+# as Claude Code: ~/.local/bin/codex, and no rc edit while $BIN is on PATH.
+# Credentials land in ~/.codex/auth.json at first login, outside the repo.
+install_codex() {
+	if have codex; then
+		echo "  already present"
+		return 0
+	fi
+	curl -fsSL https://chatgpt.com/codex/install.sh | sh
+}
+
 # ----------------------------------------------------------- signal desktop
 # Official (signal.org/download): their apt repository. The keyring and the
 # deb822 source file are checked in under bootstrap/assets so the step does
@@ -411,6 +435,8 @@ step "oxker (official install script)" install_oxker
 step "git-delta (official .deb)" install_delta
 step "GitHub CLI (official apt repository)" install_gh
 step "nvm (official install script)" install_nvm
+step "Claude Code (official install script)" install_claude_code
+step "Codex (official install script)" install_codex
 step "Signal Desktop (official apt repository)" install_signal
 step "JetBrainsMono Nerd Font" install_font
 
@@ -427,7 +453,7 @@ step "Default shell" set_default_shell
 log "Verifying tools resolve on the shell PATH"
 CHECK_PATH="$HOME/.local/bin:$HOME/.fzf/bin:/opt/nvim/bin:/usr/local/bin:/usr/local/go/bin:$PATH"
 missing=""
-for t in nvim tree-sitter tmux zsh stow fd bat eza zoxide oh-my-posh yazi ya ghostty lazygit oxker delta git gh rg jq; do
+for t in nvim tree-sitter tmux zsh stow fd bat eza zoxide oh-my-posh yazi ya ghostty lazygit oxker delta git gh rg jq claude codex; do
 	PATH="$CHECK_PATH" command -v "$t" >/dev/null 2>&1 || missing="$missing $t"
 done
 # Presence is not enough for fzf: an old apt build resolves fine but has no --zsh.
@@ -466,6 +492,7 @@ cat <<'EOF'
   2. Start tmux once; TPM auto-clones and installs plugins
   3. nvm install --lts
   4. Set your terminal font to "JetBrainsMono Nerd Font"
+  5. Run `claude` and `codex` once each to log in
 EOF
 
 if [ "${#STEPS_FAILED[@]}" -gt 0 ]; then

@@ -59,6 +59,13 @@ type = "pane"
 command = "claude --permission-mode auto"
 description = "claude (auto)"
 
+# Launch Codex in a new pane; ~/.codex/config.toml sets approvals and sandbox.
+[[keys.command]]
+key = "prefix+alt+x"
+type = "pane"
+command = "codex"
+description = "codex"
+
 [ui]
 # Full-width panes when a workspace has only one tab; sidebar still shows tabs.
 hide_tab_bar_when_single_tab = true

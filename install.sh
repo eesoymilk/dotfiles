@@ -57,12 +57,24 @@ fi
 
 # Pre-create these so stow links their *contents* instead of folding the whole
 # directory into a single symlink. Without this, an app writing to ~/.config
-# would be writing straight into the repo.
-mkdir -p "$HOME/.config" "$HOME/.local/bin" "$HOME/.claude"
+# would be writing straight into the repo. ~/.codex is where Codex keeps
+# auth.json and its sqlite state, and ~/.agents/skills and ~/.claude/skills
+# hold machine-local skills next to the repo-provided ones.
+BACKUP="$HOME/dotfiles-backup-$(date +%Y%m%d%H%M%S)"
+for dir in .claude/skills .agents/skills .codex/agents; do
+	# Older installs folded ~/.claude/skills into a repo symlink. Move any
+	# folded directory aside before creating the real runtime directory.
+	if [ -L "$HOME/$dir" ]; then
+		mkdir -p "$BACKUP/$(dirname "$dir")"
+		mv "$HOME/$dir" "$BACKUP/$dir"
+		echo "  moved legacy directory link $dir"
+	fi
+done
+mkdir -p "$HOME/.config" "$HOME/.local/bin" "$HOME/.claude/skills" \
+	"$HOME/.agents/skills" "$HOME/.codex/agents"
 
 # Move conflicting real files aside rather than using `stow --adopt`, which
 # would pull the OS's defaults *into* the repo and overwrite these configs.
-BACKUP="$HOME/dotfiles-backup-$(date +%Y%m%d%H%M%S)"
 # stow's conflict wording differs by version, so match both:
 #   2.3.x: "existing target is neither a link nor a directory: PATH"
 #   2.4.x: "cannot stow SRC over existing target PATH since ..."
@@ -83,7 +95,16 @@ fi
 stow -d "$DOTFILES" -t "$HOME" common "$OS_PKG"
 chmod +x "$HOME/.local/bin/tmux-sessionizer" 2>/dev/null || true
 
-# Claude Code reads ~/.claude/CLAUDE.md; AGENTS.md is the single source.
+# Claude Code reads ~/.claude/CLAUDE.md and Codex reads ~/.codex/AGENTS.md;
+# ~/AGENTS.md is the single source for both.
 ln -sf "$HOME/AGENTS.md" "$HOME/.claude/CLAUDE.md"
+ln -sf "$HOME/AGENTS.md" "$HOME/.codex/AGENTS.md"
+
+# Claude Code loads skills from ~/.claude/skills; the shared ones live in
+# ~/.agents/skills so Codex sees the same files. Only these two are shared:
+# the curated skills stowed alongside them are Codex-only.
+for skill in brainstorm big-task; do
+	ln -sfn "../../.agents/skills/$skill" "$HOME/.claude/skills/$skill"
+done
 
 echo "Linked common + $OS_PKG into $HOME. Restart your shell to pick up .zshrc."
