@@ -103,7 +103,6 @@ return {
       "mason-org/mason.nvim",
       "hrsh7th/cmp-nvim-lsp",
       "mason-org/mason-lspconfig.nvim",
-      "kevinhwang91/nvim-ufo",
     },
     config = function()
       vim.diagnostic.config({

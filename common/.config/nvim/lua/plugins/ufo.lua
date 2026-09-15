@@ -1,6 +1,10 @@
 return {
 	"kevinhwang91/nvim-ufo",
 	dependencies = { "kevinhwang91/promise-async" },
+	-- Must be loaded before the first file is read: attaching to a buffer that
+	-- is still empty (e.g. from a BufReadPre-triggered load) leaves ufo with a
+	-- stale line cache and no folds for that buffer.
+	lazy = false,
 	keys = {
 		{ "zR", function() require("ufo").openAllFolds() end, desc = "Open all folds." },
 		{ "zM", function() require("ufo").closeAllFolds() end, desc = "Close all folds." },
