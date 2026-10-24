@@ -1,0 +1,3 @@
+interface:
+  display_name: "Worktree Cleanup"
+  short_description: "Remove a finished herdr worktree and its branch"

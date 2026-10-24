@@ -1,0 +1,3 @@
+interface:
+  display_name: "Worktree Open"
+  short_description: "Open a herdr worktree and brief an agent in it"
