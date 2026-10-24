@@ -19,7 +19,7 @@ Darwin) OS_PKG=macos ;;
 	# shellcheck disable=SC1091
 	. /etc/os-release
 	case "${ID:-} ${ID_LIKE:-}" in
-	*arch*) OS_PKG=arch ;;
+	*arch*) OS_PKG=omarchy ;;
 	*) OS_PKG=ubuntu ;;
 	esac
 	;;
@@ -43,8 +43,7 @@ echo "Symlinks:"
 link_into_repo "$HOME/.zshrc" "~/.zshrc"
 link_into_repo "$HOME/AGENTS.md" "~/AGENTS.md"
 link_into_repo "$HOME/.config/nvim" "~/.config/nvim"
-link_into_repo "$HOME/.config/tmux" "~/.config/tmux"
-link_into_repo "$HOME/.config/ghostty/config" "~/.config/ghostty/config"
+link_into_repo "$HOME/.config/tmux/tmux.conf" "~/.config/tmux/tmux.conf"
 link_into_repo "$HOME/.config/ohmyposh" "~/.config/ohmyposh"
 link_into_repo "$HOME/.config/zsh/pre.zsh" "~/.config/zsh/pre.zsh (from $OS_PKG)"
 link_into_repo "$HOME/.config/zsh/post.zsh" "~/.config/zsh/post.zsh (from $OS_PKG)"
@@ -99,15 +98,27 @@ for d in .config .claude .claude/skills .agents .agents/skills .codex .codex/age
 	fi
 done
 
-if [ "$OS_PKG" = arch ]; then
-	link_into_repo "$HOME/.config/ghostty/os.conf" "~/.config/ghostty/os.conf (arch overrides)"
-	link_into_repo "$HOME/.config/hypr" "~/.config/hypr"
+if [ "$OS_PKG" = omarchy ]; then
+	# Omarchy owns ghostty's config (its font and text-size commands sed it),
+	# so it must stay a real file that includes the stowed overrides.
+	GHOSTTY_CONFIG="$HOME/.config/ghostty/config"
+	if [ -f "$GHOSTTY_CONFIG" ] && [ ! -L "$GHOSTTY_CONFIG" ] &&
+		grep -qxF 'config-file = ?user.conf' "$GHOSTTY_CONFIG"; then
+		pass "~/.config/ghostty/config is Omarchy's and includes user.conf"
+	else
+		fail "~/.config/ghostty/config is Omarchy's and includes user.conf"
+	fi
+	link_into_repo "$HOME/.config/ghostty/user.conf" "~/.config/ghostty/user.conf"
+	link_into_repo "$HOME/.config/omarchy/hooks/theme-set.d/wallpaper" "wallpaper theme-set hook"
+	link_into_repo "$HOME/.config/omarchy/wallpapers" "~/.config/omarchy/wallpapers"
+else
+	link_into_repo "$HOME/.config/ghostty/config" "~/.config/ghostty/config"
 fi
 
 # --------------------------------------------------------------------- tools
 echo
 echo "Tools on the shell PATH:"
-CHECK_PATH="$HOME/.local/bin:$HOME/.fzf/bin:/opt/nvim/bin:/usr/local/bin:/usr/local/go/bin:$PATH"
+CHECK_PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$HOME/.fzf/bin:/opt/nvim/bin:/usr/local/bin:/usr/local/go/bin:$PATH"
 for t in nvim tree-sitter tmux zsh stow fd bat eza zoxide oh-my-posh yazi ya lazygit delta git gh rg jq fzf claude codex; do
 	if PATH="$CHECK_PATH" command -v "$t" >/dev/null 2>&1; then
 		pass "$t"

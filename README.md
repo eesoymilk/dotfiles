@@ -1,13 +1,13 @@
 # ✨ dotfiles
 
-One repo for every machine: macOS (air), Ubuntu, and Arch (btw).
+One repo for every machine: macOS (air), Ubuntu, and Omarchy (Arch, btw).
 Shared configs live once in `common/`; each OS adds only what is genuinely its own.
 
-*The Arch machine would like you to know it runs Arch. It mentions this before the prompt even loads.* 🗿
+*The Omarchy machine would like you to know it still runs Arch. It just stopped hand-writing its own waybar config.* 🗿
 
 ![macOS](https://img.shields.io/badge/macOS-000000?style=for-the-badge&logo=apple&logoColor=white)
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)
-![Arch](https://img.shields.io/badge/Arch-1793D1?style=for-the-badge&logo=archlinux&logoColor=white)
+![Omarchy](https://img.shields.io/badge/Omarchy-1793D1?style=for-the-badge&logo=archlinux&logoColor=white)
 
 ## 🎯 Layout
 
@@ -15,21 +15,21 @@ Each top-level package is a [GNU stow](https://www.gnu.org/software/stow/) packa
 Every machine gets `common` plus exactly one OS package.
 
 ```
-common/     zsh core, nvim, tmux, ghostty, oh-my-posh, git, gh, yazi, herdr,
+common/     zsh core, nvim, tmux, oh-my-posh, git, gh, yazi, herdr, lazygit,
             AGENTS.md, .agents/skills (shared + curated Codex skills),
             .claude (agents, statusline), .codex (config, agents)
-macos/      aerospace, brew shellenv + mac PATH (zsh pre/post hooks)
-ubuntu/     ubuntu PATH hooks
-arch/       hyprland, waybar (mechabar submodule), wofi, wlogout, waystt,
-            wallpapers, arch PATH hooks (I use this package, btw)
-bootstrap/  per-OS tool installers (ubuntu.sh, arch.sh, macos.sh) + assets
+macos/      aerospace, ghostty, brew shellenv + mac PATH (zsh pre/post hooks)
+ubuntu/     ghostty, ubuntu PATH hooks
+omarchy/    ghostty overrides, wallpaper + theme-set hook, mise/BROWSER zsh hooks
+bootstrap/  per-OS tool installers (ubuntu.sh, omarchy.sh, macos.sh) + assets
 tests/      docker E2E tests (fresh container -> bootstrap -> verify)
 ```
 
 ### How per-OS differences work
 
 - `.zshrc` is shared; it sources `~/.config/zsh/pre.zsh` (PATH, brew shellenv) first and `~/.config/zsh/post.zsh` (machine extras) near the end. Each OS package provides both.
-- `ghostty` shares one config; it ends with `config-file = ?os.conf`, and an OS package may provide `os.conf` overrides (arch does, for hyprland blur).
+- `ghostty`: mac and Ubuntu each ship a full config (Catppuccin Mocha). On Omarchy, `~/.config/ghostty/config` stays Omarchy's own real file, because `omarchy font set` and `omarchy display text size` rewrite it with `sed -i` and the theme switcher includes its palette from it; `install.sh` appends `config-file = ?user.conf` so the stowed `user.conf` overrides load last.
+- Colours: tmux, herdr, and the oh-my-posh prompt use ANSI colours only, so they take the terminal's palette. That is the active Omarchy theme on Omarchy and Catppuccin elsewhere. nvim reads the Omarchy theme's colorscheme from `~/.local/state/omarchy/current/theme/neovim.lua` and falls back to Catppuccin.
 - `tmux` and `nvim` handle the few OS differences inline (`pbcopy`/`wl-copy`, Skim/Okular).
 
 ## 🚀 Install
@@ -43,6 +43,7 @@ cd ~/dotfiles
 ```
 
 `install.sh` detects the OS, stows `common` + the OS package, and backs up any conflicting real files to `~/dotfiles-backup-<timestamp>/`.
+Before replacing `~/.config/git/config` it copies any `user.name`/`user.email` found there into `~/.gitconfig`, so the identity Omarchy's installer wrote survives.
 It then links `~/.claude/CLAUDE.md` and `~/.codex/AGENTS.md` -> `~/AGENTS.md`, and the shared `brainstorm` and `big-task` skills into `~/.claude/skills/`.
 Safe to re-run; credentials, session history, and caches under `~/.claude` and `~/.codex` are never touched.
 
@@ -51,7 +52,7 @@ Bootstrap installs every tool by its officially documented method (Claude Code a
 ### Per-OS notes
 
 - **Ubuntu**: apt where the archive is fresh enough, official repos/scripts elsewhere. Also installs Signal Desktop, the JetBrainsMono Nerd Font, and the packaged Bubblewrap AppArmor profile required by the Codex sandbox on Ubuntu 24.04.
-- **Arch**: pacman for nearly everything; oh-my-posh and oxker use their official install scripts (AUR-only otherwise); wlogout needs an AUR helper. `SKIP_DESKTOP=1` skips the Hyprland stack. Yes, a bootstrap script for Arch - the wiki is a great read, but I have already done my rite of passage.
+- **Omarchy**: Omarchy owns the desktop (Hyprland, bar, launcher, lock, idle, notifications, screenshots, voxtype dictation) and ships most of the CLI set, so the bootstrap only fills gaps through Omarchy's own installers: `omarchy pkg add zsh stow yazi git-delta`, `omarchy install terminal ghostty`, and mise for claude/codex/gh (node too). oh-my-posh and oxker use their official install scripts (AUR-only otherwise). Plain Arch without Omarchy is no longer supported; the old hand-rolled Hyprland/waybar/wofi/wlogout setup lives in git history. I did my rite of passage. Now I just want the computer to work.
 - **macOS**: Homebrew for everything, casks for ghostty, aerospace, and the nerd font.
 
 ## 🤖 Agents
@@ -77,14 +78,11 @@ Claude Code and Codex share one instruction file and one skills directory; each 
 Fresh-container E2E: build runs the real `./install.sh --bootstrap`, then `tests/verify.sh` hard-asserts symlinks, tools on PATH, and that interactive zsh boots.
 
 ```sh
-./tests/run.sh          # ubuntu + arch (docker required, takes a while)
-./tests/run.sh ubuntu   # just one
+./tests/run.sh          # ubuntu (docker required, takes a while)
 ```
 
-The Arch test is the fastest of the two, which the Arch machine also mentions unprompted.
-(It is also the only container that has probably shipped a kernel update since you started reading this sentence.)
-
-macOS cannot run in docker; run `tests/verify.sh` on the mac itself after installing.
+macOS and Omarchy cannot run in docker; run `tests/verify.sh` on those machines after installing.
+(The Omarchy machine has probably shipped a kernel update since you started reading this sentence.)
 
 ## 🕰️ History
 

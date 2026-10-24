@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# Run the E2E docker tests: fresh Ubuntu and Arch containers each run the
-# real bootstrap and then assert the resulting state.
+# Run the E2E docker tests: a fresh container runs the real bootstrap and then
+# asserts the resulting state. Omarchy cannot run in a container; run
+# tests/verify.sh on the Omarchy machine itself.
 #
-#   ./tests/run.sh            run both
+#   ./tests/run.sh            run all
 #   ./tests/run.sh ubuntu     run one
 set -uo pipefail
 
@@ -10,7 +11,7 @@ REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO"
 
 targets=("$@")
-[ "${#targets[@]}" -eq 0 ] && targets=(ubuntu arch)
+[ "${#targets[@]}" -eq 0 ] && targets=(ubuntu)
 
 declare -A results
 rc=0

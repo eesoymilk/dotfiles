@@ -1,0 +1,8 @@
+#!/bin/bash
+# Keep my own wallpaper across theme switches. `omarchy theme set` picks a
+# background from the new theme; this runs right after and puts mine back.
+# Delete this hook to get the theme backgrounds again.
+
+WALLPAPER="$HOME/.config/omarchy/wallpapers/frieren2.jpeg"
+
+[[ -f $WALLPAPER ]] && omarchy-theme-bg-set "$WALLPAPER"

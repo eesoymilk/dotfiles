@@ -7,10 +7,16 @@
 onboarding = false
 
 [theme]
-# Match tmux/ghostty Catppuccin Mocha.
-name = "catppuccin"
+# Use the terminal's own palette, like tmux, so the Omarchy theme switcher
+# recolours it (and it stays Catppuccin wherever ghostty is).
+name = "terminal"
 
 auto_switch = false
+
+[theme.custom]
+# The active tab is panel_bg text on the accent colour; keep it dark to read.
+panel_bg = "black"
+
 [keys]
 # Same prefix as tmux for muscle memory.
 prefix = "ctrl+a"

@@ -1,12 +1,18 @@
 #!/usr/bin/env bash
-# Bootstrap the dotfiles setup on Arch: install every tool, then link
-# configs via ../install.sh. Normally invoked as `./install.sh --bootstrap`.
+# Bootstrap the dotfiles setup on Omarchy: install what Omarchy does not
+# already ship, then link configs via ../install.sh. Normally invoked as
+# `./install.sh --bootstrap`.
+#
+# Omarchy already provides the desktop (Hyprland, bar, launcher, lock, idle,
+# notifications, screenshots, dictation) and most of the CLI set: nvim, tmux,
+# herdr, lazygit, fzf, zoxide, eza, bat, fd, ripgrep, jq, tree-sitter,
+# wl-clipboard, docker, the JetBrainsMono Nerd Font, and mise, which manages
+# node, gh, claude, and codex. This script only fills the gaps, through
+# Omarchy's own installers wherever one exists.
 #
 # Same step-runner contract as ubuntu.sh: no single tool can abort the run,
 # failures are collected and reported, and the script exits non-zero when
 # anything failed.
-#
-# SKIP_DESKTOP=1 skips the Hyprland desktop stack (useful in containers).
 set -euo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -38,39 +44,30 @@ step() {
 }
 
 # ------------------------------------------------------------ pacman packages
-# Everything the shared configs expect that lives in the official repos.
-install_pacman() {
-	sudo pacman -Syu --needed --noconfirm \
-		zsh stow tmux git curl wget unzip tar base-devel \
-		fd bat ripgrep jq \
-		fzf zoxide eza yazi neovim tree-sitter-cli \
-		lazygit github-cli git-delta \
-		wl-clipboard \
-		ttf-jetbrains-mono-nerd \
-		ghostty
+# Repo packages the shared configs need that Omarchy does not install.
+# git-delta is the pager for git and lazygit.
+install_packages() {
+	omarchy pkg add zsh stow yazi git-delta
 }
 
-# ------------------------------------------------------- hyprland desktop stack
-# wlogout is AUR-only; install it with paru/yay when one is present, otherwise
-# report it as manual work instead of failing the step.
-install_desktop() {
-	if [ "${SKIP_DESKTOP:-0}" = 1 ]; then
-		echo "  SKIP_DESKTOP=1 - skipping"
-		return 0
-	fi
-	sudo pacman -S --needed --noconfirm \
-		hyprland hypridle hyprlock hyprpaper waybar wofi
-	if have paru; then
-		paru -S --needed --noconfirm wlogout
-	elif have yay; then
-		yay -S --needed --noconfirm wlogout
-	else
-		echo "  wlogout is AUR-only and no AUR helper found - install it manually"
-	fi
+# ----------------------------------------------------------------- ghostty
+# Omarchy's terminal installer: installs the package, seeds Omarchy's themed
+# config, and makes ghostty the default for Super+Return.
+install_ghostty() {
+	omarchy install terminal ghostty
+}
+
+# ------------------------------------------------------------- mise tools
+# Omarchy installs the agent CLIs through mise; make sure they are there
+# (a no-op on a stock install). gh comes from here rather than pacman too.
+install_mise_tools() {
+	mise use -g claude@latest codex@latest gh@latest
 }
 
 # -------------------------------------------------------------- oh-my-posh
-# AUR-only on Arch, so use the official install script like ubuntu.sh does.
+# Not packaged for Arch outside the AUR; use the official install script.
+# Omarchy's starship only hooks into bash, and the zsh prompt stays shared
+# with the mac and Ubuntu machines.
 install_oh_my_posh() {
 	if have oh-my-posh; then
 		echo "  already present"
@@ -93,43 +90,6 @@ install_oxker() {
 	rm -rf "$tmp"
 }
 
-# --------------------------------------------------------------------- nvm
-# Official (nvm README): the upstream install script. PROFILE=/dev/null stops
-# it appending to ~/.zshrc, which is a symlink into this repo; .zshrc already
-# sources nvm itself.
-install_nvm() {
-	if [ -d "$HOME/.nvm" ]; then
-		echo "  already present"
-		return 0
-	fi
-	curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh |
-		PROFILE=/dev/null bash
-}
-
-# ------------------------------------------------------------- claude code
-# Official (code.claude.com/docs/en/setup): the native installer. It puts the
-# binary in ~/.local/bin and only edits a shell rc when that directory is not
-# already on PATH, which the export at the top of this script guarantees.
-install_claude_code() {
-	if have claude; then
-		echo "  already present"
-		return 0
-	fi
-	curl -fsSL https://claude.ai/install.sh | bash
-}
-
-# ------------------------------------------------------------------- codex
-# Official (developers.openai.com/codex): the standalone installer. Same shape
-# as Claude Code: ~/.local/bin/codex, and no rc edit while $BIN is on PATH.
-# Credentials land in ~/.codex/auth.json at first login, outside the repo.
-install_codex() {
-	if have codex; then
-		echo "  already present"
-		return 0
-	fi
-	curl -fsSL https://chatgpt.com/codex/install.sh | sh
-}
-
 # ------------------------------------------------------------------- link
 link_dotfiles() {
 	"$DOTFILES/install.sh"
@@ -140,7 +100,7 @@ link_dotfiles() {
 # plugins/ and flavors/ are gitignored, so this must run after linking.
 install_yazi_packages() {
 	if ! have ya; then
-		echo "  ya is not on PATH - the pacman step must have failed" >&2
+		echo "  ya is not on PATH - the packages step must have failed" >&2
 		return 1
 	fi
 	ya pkg install
@@ -164,13 +124,11 @@ set_default_shell() {
 }
 
 # ------------------------------------------------------------------- run
-step "pacman packages" install_pacman
-step "Hyprland desktop stack" install_desktop
+step "Packages (omarchy pkg add)" install_packages
+step "Ghostty (omarchy install terminal)" install_ghostty
+step "Claude Code, Codex, gh (mise)" install_mise_tools
 step "oh-my-posh (official install script)" install_oh_my_posh
 step "oxker (official install script)" install_oxker
-step "nvm (official install script)" install_nvm
-step "Claude Code (official install script)" install_claude_code
-step "Codex (official install script)" install_codex
 
 hash -r
 
@@ -180,9 +138,9 @@ step "Default shell" set_default_shell
 
 # ------------------------------------------------------------------ verify
 log "Verifying tools resolve on the shell PATH"
-CHECK_PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
+CHECK_PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:/usr/local/bin:$PATH"
 missing=""
-for t in nvim tree-sitter tmux zsh stow fd bat eza zoxide oh-my-posh yazi ya lazygit oxker delta git gh rg jq fzf claude codex; do
+for t in ghostty nvim tree-sitter tmux herdr zsh stow fd bat eza zoxide oh-my-posh yazi ya lazygit oxker delta git gh rg jq fzf mise claude codex; do
 	PATH="$CHECK_PATH" command -v "$t" >/dev/null 2>&1 || missing="$missing $t"
 done
 PATH="$CHECK_PATH" fzf --zsh >/dev/null 2>&1 || missing="$missing fzf(--zsh-unsupported)"

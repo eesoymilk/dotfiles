@@ -2,7 +2,7 @@
 # Link this dotfiles repo into $HOME with GNU stow.
 #
 # Every machine gets the `common` package plus its own OS package
-# (macos, ubuntu, or arch). Safe to re-run: existing correct links are
+# (macos, ubuntu, or omarchy). Safe to re-run: existing correct links are
 # left alone and conflicting real files are backed up first.
 #
 # Usage:
@@ -24,7 +24,15 @@ detect_os() {
 			# shellcheck disable=SC1091
 			. /etc/os-release
 			case "${ID:-} ${ID_LIKE:-}" in
-			*arch*) echo arch && return ;;
+			*arch*)
+				# Only Omarchy is supported on the Arch side: it owns the desktop
+				# (Hyprland, bar, launcher, lock), so there is no plain-Arch package.
+				if command -v omarchy >/dev/null 2>&1; then
+					echo omarchy && return
+				fi
+				echo "Arch without Omarchy is no longer supported (see README)." >&2
+				exit 1
+				;;
 			*ubuntu* | *debian*) echo ubuntu && return ;;
 			esac
 		fi
@@ -50,11 +58,6 @@ if ! command -v stow >/dev/null 2>&1; then
 	exit 1
 fi
 
-# The arch package carries waybar (mechabar) as a submodule.
-if [ "$OS_PKG" = "arch" ] && [ -f "$DOTFILES/.gitmodules" ]; then
-	git -C "$DOTFILES" submodule update --init
-fi
-
 # Pre-create these so stow links their *contents* instead of folding the whole
 # directory into a single symlink. Without this, an app writing to ~/.config
 # would be writing straight into the repo. ~/.codex is where Codex keeps
@@ -72,6 +75,34 @@ for dir in .claude/skills .agents/skills .codex/agents; do
 done
 mkdir -p "$HOME/.config" "$HOME/.local/bin" "$HOME/.claude/skills" \
 	"$HOME/.agents/skills" "$HOME/.codex/agents"
+# Omarchy writes into both of these itself (its own ghostty config, sample
+# hooks), so only individual files may be links.
+if [ "$OS_PKG" = "omarchy" ]; then
+	mkdir -p "$HOME/.config/ghostty" "$HOME/.config/omarchy/hooks/theme-set.d"
+
+	# Omarchy seeds ~/.config/nvim with a LazyVim starter. The per-file
+	# conflict backup below would leave its extra plugin specs behind for this
+	# config's `import = "plugins"` to load, so move the whole tree aside.
+	if [ -f "$HOME/.config/nvim/lazyvim.json" ] && [ ! -L "$HOME/.config/nvim" ]; then
+		mkdir -p "$BACKUP/.config"
+		mv "$HOME/.config/nvim" "$BACKUP/.config/nvim"
+		echo "  moved Omarchy's LazyVim config aside"
+	fi
+fi
+
+# The stowed git config replaces ~/.config/git/config, which is where Omarchy's
+# installer (and `git config --global` without a ~/.gitconfig) put the user's
+# identity. Carry it over to ~/.gitconfig, which git reads as well, so commits
+# keep their author. --file, because --global would write into the repo.
+if [ -f "$HOME/.config/git/config" ] && [ ! -L "$HOME/.config/git/config" ]; then
+	for key in user.name user.email user.signingkey; do
+		val=$(git config --file "$HOME/.config/git/config" --get "$key" || true)
+		if [ -n "$val" ] && ! git config --file "$HOME/.gitconfig" --get "$key" >/dev/null 2>&1; then
+			git config --file "$HOME/.gitconfig" "$key" "$val"
+			echo "  kept $key in ~/.gitconfig"
+		fi
+	done
+fi
 
 # Move conflicting real files aside rather than using `stow --adopt`, which
 # would pull the OS's defaults *into* the repo and overwrite these configs.
@@ -94,6 +125,20 @@ fi
 
 stow -d "$DOTFILES" -t "$HOME" common "$OS_PKG"
 chmod +x "$HOME/.local/bin/tmux-sessionizer" 2>/dev/null || true
+
+# Omarchy: ~/.config/ghostty/config is Omarchy's own file (see the header of
+# omarchy/.config/ghostty/user.conf). Seed it if missing and make it include
+# the stowed overrides. `omarchy refresh ghostty` drops the line; re-run this.
+if [ "$OS_PKG" = "omarchy" ]; then
+	GHOSTTY_CONFIG="$HOME/.config/ghostty/config"
+	if [ ! -e "$GHOSTTY_CONFIG" ]; then
+		cp "${OMARCHY_PATH:-/usr/share/omarchy}/config/ghostty/config" "$GHOSTTY_CONFIG"
+	fi
+	INCLUDE='config-file = ?user.conf'
+	if ! grep -qxF "$INCLUDE" "$GHOSTTY_CONFIG"; then
+		printf '\n# Personal overrides, stowed from the dotfiles repo.\n%s\n' "$INCLUDE" >>"$GHOSTTY_CONFIG"
+	fi
+fi
 
 # Claude Code reads ~/.claude/CLAUDE.md and Codex reads ~/.codex/AGENTS.md;
 # ~/AGENTS.md is the single source for both.

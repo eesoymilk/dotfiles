@@ -1,4 +1,0 @@
-[submodule "arch/.config/waybar"]
-	path = arch/.config/waybar
-	url = https://github.com/eesoymilk/mechabar.git
-	branch = fix/v0.14.0

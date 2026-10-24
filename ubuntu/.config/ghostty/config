@@ -1,0 +1,12 @@
+font-family = JetBrainsMono Nerd Font
+font-size = 24
+window-padding-x = 8
+window-padding-y = 4
+
+# tmux, herdr and the prompt draw with ANSI colours, so the palette set here
+# is what they all show.
+theme = Catppuccin Mocha
+background-opacity = 0.85
+background-blur = true
+
+keybind = shift+enter=text:\n
