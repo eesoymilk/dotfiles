@@ -54,7 +54,7 @@ link_into_repo "$HOME/.local/bin/tmux-sessionizer" "~/.local/bin/tmux-sessionize
 # ~/.agents/skills is a real dir holding machine-local skills too, so assert
 # each repo-provided skill rather than the directory. The first two are shared
 # with Claude Code through ~/.claude/skills; the rest are Codex-only.
-SHARED_SKILLS="brainstorm big-task"
+SHARED_SKILLS="brainstorm big-task wt-open wt-cleanup"
 CODEX_SKILLS="gh-address-comments gh-fix-ci playwright security-best-practices security-threat-model"
 for s in $SHARED_SKILLS $CODEX_SKILLS; do
 	link_into_repo "$HOME/.agents/skills/$s" "~/.agents/skills/$s"
@@ -119,7 +119,7 @@ fi
 echo
 echo "Tools on the shell PATH:"
 CHECK_PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$HOME/.fzf/bin:/opt/nvim/bin:/usr/local/bin:/usr/local/go/bin:$PATH"
-for t in nvim tree-sitter tmux zsh stow fd bat eza zoxide oh-my-posh yazi ya lazygit delta git gh rg jq fzf claude codex; do
+for t in nvim tree-sitter tmux zsh stow fd bat eza zoxide oh-my-posh yazi ya lazygit delta git gh rg jq fzf python3 claude codex; do
 	if PATH="$CHECK_PATH" command -v "$t" >/dev/null 2>&1; then
 		pass "$t"
 	else
