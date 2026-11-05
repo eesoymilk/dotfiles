@@ -477,7 +477,7 @@ step "Default shell" set_default_shell
 log "Verifying tools resolve on the shell PATH"
 CHECK_PATH="$HOME/.local/bin:$HOME/.fzf/bin:/opt/nvim/bin:/usr/local/bin:/usr/local/go/bin:$PATH"
 missing=""
-for t in nvim tree-sitter tmux zsh stow fd bat eza zoxide oh-my-posh yazi ya ghostty lazygit oxker delta git gh rg jq claude codex; do
+for t in nvim tree-sitter tmux zsh stow fd bat eza zoxide oh-my-posh yazi ya ghostty lazygit oxker delta git gh rg jq python3 claude codex; do
 	PATH="$CHECK_PATH" command -v "$t" >/dev/null 2>&1 || missing="$missing $t"
 done
 # Presence is not enough for fzf: an old apt build resolves fine but has no --zsh.

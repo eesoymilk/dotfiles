@@ -7,95 +7,48 @@ description: Clean up a finished git worktree whose PR is merged or closed - upd
 
 Tear down one worktree after its PR is merged or closed, without losing anything that was never pushed.
 
-Requires running inside herdr: `test "${HERDR_ENV:-}" = 1`.
-If the check fails, say so and stop.
-Read IDs from the JSON each command returns; never predict them.
+## 1. Run the script
 
-## 1. Find the target
+Do not run preflight checks first; the script does them and removes nothing if they fail.
 
 ```bash
-herdr worktree list --cwd <repo>
+~/.agents/skills/wt-cleanup/scripts/wt_cleanup.py [<branch, directory name, or PR number>]
 ```
 
-Match the user's words (branch, label, PR number) against the linked worktrees (`is_linked_worktree: true`).
-Never target the primary checkout.
-If nothing was named or the match is ambiguous, show the linked worktrees with their PR state (step 2) and ask which.
+With no target, it picks the worktree of the workspace you are running in.
+Add `--repo <path>` if the worktree belongs to a repo other than the current directory's.
 
-Note whether the target's `open_workspace_id` is the workspace of your own pane (`herdr pane get "$HERDR_PANE_ID"`).
-If it is, you are running inside the worktree; step 5 handles that.
+Removal closes the worktree's workspace, including any agent in it, and deletes the local branch.
+If the target is your own workspace, removal ends this session, and the result arrives as a herdr notification instead of as output.
+The remote branch is never deleted.
 
-## 2. Check the PR
+## 2. Act on the `status` it prints
 
-```bash
-gh pr list --head <branch> --state all --json number,state,url,headRefOid
-```
+- `removed`: go to step 3.
+- `choose`: nothing was removed, because no single worktree matched.
+  Show the listed worktrees with their PR state and `blockers`, and ask which one to remove.
+- `blocked`: nothing was removed.
+  Show the user `blockers`.
+  Run again with `--force` only if the user explicitly accepts losing that work after seeing it.
+- `needs_jira`: nothing was removed yet; update Jira as described below, then run again with `--jira-done`.
+- `error`: show `error` to the user.
+  If you targeted your own workspace, the notification may be premature, so tell the user the removal failed.
 
-- `MERGED` or `CLOSED`: continue.
-- `OPEN`: stop and say so.
-- No PR: stop and ask; the work may never have been pushed.
+Ignored files such as copied `.env` files and build output are expected to be lost and are not blockers.
 
-## 3. Check nothing would be lost
+### Updating Jira
 
-All of these must hold; if any fails, stop, show what would be lost, and let the user decide:
+`jira_keys` lists strings shaped like Jira keys, so some may not be real issues.
+Fetch each one with the available Jira tools to confirm it exists, then:
 
-- No uncommitted or untracked changes: `git -C <path> status --porcelain` is empty.
-- The local branch tip is the PR head: `git -C <path> rev-parse HEAD` equals `headRefOid`.
-  A differing tip means local commits were never pushed to the PR.
-- No stashes made on this branch: `git -C <repo> stash list` has no entry naming `<branch>`.
-
-An empty `status --porcelain` also proves every submodule is clean and at its pinned commit.
-Ignored files such as copied `.env` files and build output are expected to be lost.
-
-## 4. Update the Jira ticket
-
-Look for Jira issue keys (`[A-Z][A-Z0-9]+-[0-9]+`) in the branch name, PR title, and PR body (`gh pr view <number> --json title,body`).
-If there are none, skip this step.
-
-For each key, fetch the issue with the available Jira tools to confirm it exists, then:
-
-- Add a comment with the PR link and its final state (merged or closed), plus a one-line summary of what the PR did.
-- If the PR was merged and the issue is not already in a done status, transition it to the done status from the issue's available transitions.
-- If the PR was closed without merging, or the issue clearly has other work still open (other open PRs, unchecked subtasks), comment only and ask the user whether to transition it.
+- Add a comment with the PR link and its final state, plus a one-line summary of what the PR did.
+- If the PR was merged and the issue is not already done, transition it to the done status from its available transitions.
+- If the PR was closed without merging, or the issue clearly has other work still open, comment only and ask the user whether to transition it.
 - If no transition clearly means done, ask the user which one to use.
 
-If the Jira tools are unavailable or an update fails, stop before removing anything and tell the user.
+If the Jira tools are unavailable or an update fails, stop and tell the user; do not pass `--jira-done`.
 
-## 5. Remove
-
-`herdr worktree remove` deletes the worktree directory and closes its workspace, including any agent running in it.
-Git cannot delete a branch still checked out in a worktree, so the order matters.
-Git also refuses to remove a worktree with initialized submodules, however clean.
-If `git -C <path> submodule status --recursive` lists any line not starting with `-`, add `--force` to the remove command; step 3 already proved there is nothing to lose.
-
-From another workspace, run:
-
-```bash
-herdr worktree remove --workspace <open_workspace_id>
-git -C <repo> branch -D <branch>
-git -C <repo> fetch --prune origin
-```
-
-If the worktree has no open workspace, use `git -C <repo> worktree remove <path>` instead of `herdr worktree remove`.
-
-From inside the worktree, the removal kills you, so it must be the last command.
-Detach HEAD to free the branch, delete it, and post the step 6 report as a herdr notification, because the pane is about to disappear:
-
-```bash
-git -C <path> checkout --detach
-git -C <path> branch -D <branch>
-git -C <path> fetch --prune origin
-herdr notification show "<branch>: removing worktree" --body "<report>"
-herdr worktree remove --workspace <open_workspace_id>
-```
-
-The herdr server finishes the removal after your process is gone; do not chain anything after it.
-If the remove returns an error, you are still alive: tell the user the notification was premature and why the removal failed.
-
-`-D` is needed because squash and rebase merges leave the branch looking unmerged; step 3 already proved the commits are on the remote.
-Beyond the submodule case, never pass `--force` to either remove command unless the user explicitly asked after seeing what is dirty.
-Never delete the remote branch; leave that to GitHub or the user.
-
-## 6. Report
+## 3. Report
 
 One or two lines: which worktree, workspace, and branch were removed, the PR link with its final state, and any Jira issue updated with its new status.
-If the remote branch still exists (`git -C <repo> ls-remote --heads origin <branch>`), mention it.
+If `remote_branch_exists` is true, mention it.
