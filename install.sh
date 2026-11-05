@@ -148,7 +148,7 @@ ln -sf "$HOME/AGENTS.md" "$HOME/.codex/AGENTS.md"
 # Claude Code loads skills from ~/.claude/skills; the shared ones live in
 # ~/.agents/skills so Codex sees the same files. Only these are shared:
 # the curated skills stowed alongside them are Codex-only.
-for skill in brainstorm big-task wt-open wt-cleanup; do
+for skill in brainstorm big-task wt-open wt-cleanup ship; do
 	ln -sfn "../../.agents/skills/$skill" "$HOME/.claude/skills/$skill"
 done
 
