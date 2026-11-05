@@ -54,7 +54,7 @@ link_into_repo "$HOME/.local/bin/tmux-sessionizer" "~/.local/bin/tmux-sessionize
 # ~/.agents/skills is a real dir holding machine-local skills too, so assert
 # each repo-provided skill rather than the directory. The first two are shared
 # with Claude Code through ~/.claude/skills; the rest are Codex-only.
-SHARED_SKILLS="brainstorm big-task wt-open wt-cleanup"
+SHARED_SKILLS="brainstorm big-task wt-open wt-cleanup ship"
 CODEX_SKILLS="gh-address-comments gh-fix-ci playwright security-best-practices security-threat-model"
 for s in $SHARED_SKILLS $CODEX_SKILLS; do
 	link_into_repo "$HOME/.agents/skills/$s" "~/.agents/skills/$s"
