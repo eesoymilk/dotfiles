@@ -3,7 +3,7 @@
 # everything fits, otherwise two:
 #
 #   row 1, where:     model, agent, directory, git, session
-#   row 2, resources: context, churn, cost
+#   row 2, resources: context, usage limits, churn
 #
 # Width-aware by necessity. Claude Code captures stdout rather than handing the
 # script a terminal, so `tput cols` sees nothing here; COLUMNS is exported for
@@ -39,9 +39,9 @@ fi
 # character: bash collapses runs of it, so a single empty field (no agent, no
 # effort) would silently shift every field after it by one.
 IFS=$'\037' read -r MODEL EFFORT FAST AGENT STYLE SESSION DIR EXTRA_DIRS \
-	PCT CTX_USED CTX_SIZE \
-	COST ADDED REMOVED < <(
-	jq -r '[
+	PCT CTX_USED CTX_SIZE LIMIT_5H RESET_5H LIMIT_7D RESET_7D \
+	ADDED REMOVED < <(
+		jq -r '[
 		(.model.display_name // "?"),
 		(.effort.level // ""),
 		(if .fast_mode then "1" else "" end),
@@ -55,11 +55,27 @@ IFS=$'\037' read -r MODEL EFFORT FAST AGENT STYLE SESSION DIR EXTRA_DIRS \
 		((.context_window.current_usage // {}) | (.input_tokens // 0)
 			+ (.cache_creation_input_tokens // 0) + (.cache_read_input_tokens // 0)),
 		(.context_window.context_window_size // 0),
-		(.cost.total_cost_usd // 0),
+		(if .rate_limits.five_hour.used_percentage == null then -1
+		 else (.rate_limits.five_hour.used_percentage | floor) end),
+		(.rate_limits.five_hour.resets_at // 0),
+		(if .rate_limits.seven_day.used_percentage == null then -1
+		 else (.rate_limits.seven_day.used_percentage | floor) end),
+		(.rate_limits.seven_day.resets_at // 0),
 		(.cost.total_lines_added // 0),
 		(.cost.total_lines_removed // 0)
 	] | map(tostring) | join("\u001f")' <<<"$json"
-)
+	)
+
+# Cache the rate limits for tools outside this session that weigh the quota
+# left, such as the route skill. Written via rename so a reader never sees half.
+if [ "$LIMIT_5H" -ge 0 ] || [ "$LIMIT_7D" -ge 0 ]; then
+	cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/claude"
+	[ -d "$cache_dir" ] || mkdir -p "$cache_dir"
+	now=$(date +%s)
+	printf '{"five_hour":{"used_percent":%s,"resets_at":%s},"seven_day":{"used_percent":%s,"resets_at":%s},"updated_at":%s}\n' \
+		"$LIMIT_5H" "$RESET_5H" "$LIMIT_7D" "$RESET_7D" "$now" >"$cache_dir/rate-limits.json.$$" &&
+		mv -f "$cache_dir/rate-limits.json.$$" "$cache_dir/rate-limits.json"
+fi
 
 # Visible width, in pure bash: forking sed per segment would be silly for a
 # script this hot.
@@ -193,12 +209,43 @@ else
 	add "${C_DIM}ctx --${C_RESET}"
 fi
 
+# Show reset times in the user's local timezone.
+reset_time() {
+	local epoch=$1 include_day=$2 format='%I:%M%p' stamp
+	[ "$include_day" = 1 ] && format="%a $format"
+	if [[ $OSTYPE == darwin* ]]; then
+		stamp=$(date -r "$epoch" "+$format")
+	else
+		stamp=$(date -d "@$epoch" "+$format")
+	fi
+	stamp=${stamp/#0/}
+	stamp=${stamp/ 0/ }
+	stamp=${stamp/:00AM/AM}
+	stamp=${stamp/:00PM/PM}
+	stamp=${stamp/%AM/am}
+	stamp=${stamp/%PM/pm}
+	printf '%s' "$stamp"
+}
+
+add_limit() {
+	local label=$1 pct=$2 reset=$3 include_day=$4 color short time
+	[ "$pct" -ge 0 ] 2>/dev/null || return 0
+	[ "$pct" -le 100 ] || pct=100
+	color=$(level_color "$pct")
+	short="${C_DIM}${label}${C_RESET} ${color}${pct}%${C_RESET}"
+	if [ "$reset" -gt 0 ] 2>/dev/null; then
+		time=$(reset_time "$reset" "$include_day")
+		add "${short} ${C_DIM}@${time}${C_RESET}" "$short"
+	else
+		add "$short"
+	fi
+}
+add_limit 5h "$LIMIT_5H" "$RESET_5H" 0
+add_limit week "$LIMIT_7D" "$RESET_7D" 1
+
 if [ "$ADDED" != "0" ] || [ "$REMOVED" != "0" ]; then
 	add "${C_OK}+${ADDED}${C_RESET} ${C_CRIT}-${REMOVED}${C_RESET}"
 fi
-
-cost=$(printf '$%.2f' "$COST" 2>/dev/null || true)
-[ -n "$cost" ] && [ "$cost" != '$0.00' ] && add "${C_DIM}${cost}${C_RESET}"
 
 RESOURCES=("${SEGS[@]}")
 
