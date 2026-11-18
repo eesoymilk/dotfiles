@@ -55,7 +55,7 @@ link_into_repo "$HOME/.claude/CLAUDE.md" "~/.claude/CLAUDE.md"
 # ~/.agents/skills is a real dir holding machine-local skills too, so assert
 # each repo-provided skill rather than the directory. The SHARED_SKILLS are shared
 # with Claude Code through ~/.claude/skills; the rest are Codex-only.
-SHARED_SKILLS="brainstorm big-task herdr route wt-open wt-cleanup ship"
+SHARED_SKILLS="brainstorm fleet herdr route wt-open wt-cleanup ship"
 CODEX_SKILLS="gh-address-comments gh-fix-ci playwright security-best-practices security-threat-model"
 for s in $SHARED_SKILLS $CODEX_SKILLS; do
 	link_into_repo "$HOME/.agents/skills/$s" "~/.agents/skills/$s"

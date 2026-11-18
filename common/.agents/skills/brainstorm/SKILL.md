@@ -27,7 +27,7 @@ The goal is to converge on a decision the user owns, grounded in facts rather th
    Ask about decisions that change what gets built, not about details you can decide yourself.
 6. **Record the outcome.**
    End with a short written summary of what was decided and what was explicitly rejected, so the decision survives the session.
-   For large follow-on work, hand off to the [[big-task]] skill.
+   For large follow-on work, hand off to the [[fleet]] skill.
 
 ## Rules
 

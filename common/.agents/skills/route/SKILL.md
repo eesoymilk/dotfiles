@@ -1,6 +1,6 @@
 ---
 name: route
-description: Pick the harness (Claude Code, Codex, or pi), model, and effort for an agent you are about to delegate a task to, by task difficulty and the quota left on each subscription, and confirm the pick with the user. Use before starting any agent in herdr (wt-open, big-task), or when the user asks which model or harness a task should get, or runs /route.
+description: Pick the harness (Claude Code, Codex, or pi), model, and effort for an agent you are about to delegate a task to, by task difficulty and the quota left on each subscription, and confirm the pick with the user. Use before starting any agent in herdr (wt-open, fleet), or when the user asks which model or harness a task should get, or runs /route.
 ---
 
 # Route
@@ -54,7 +54,7 @@ Otherwise ask once before launching anything, with AskUserQuestion where the har
 - Put your pick first, marked "(Recommended)", with its tier and a one-line reason that cites the quota, such as "normal tier; Codex has 80% left, Claude 35%".
 - Add the other harness in the same tier, and the tier above or below, whichever is the likelier correction.
 
-For several agents at once, as in big-task, show the whole assignment instead and let the user change any line of it.
+For several agents at once, as in fleet, show the whole assignment instead and let the user change any line of it.
 
 ## 5. Launch with the native args
 

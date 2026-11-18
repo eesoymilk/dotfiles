@@ -1,26 +1,50 @@
 ---
-name: big-task
-description: Run a large multi-part task end to end - grill the user into a self-contained spec, split it across N parallel Claude or Codex agents in herdr, coordinate them live, and deliver a clean report. Use when the request bundles many features/bugfixes/investigations that would degrade a single agent.
+name: fleet
+description: Run a large multi-part task end to end with a fleet of parallel agents - grill the user into a self-contained spec (or take a spec they already wrote), split it into work items, give each the model its role calls for, run them as herdr panes or as subagents, coordinate them live, and deliver a clean report. Use when the request bundles many features/bugfixes/investigations that would degrade a single agent, when the user hands over a spec and wants agents dispatched on it, or runs /fleet.
 ---
 
-# Big Task
+# Fleet
 
 One long request containing many features, bugfixes, and investigations.
 Too much for one agent to hold well.
-This skill takes it from raw prompt to finished work across N parallel agents.
+This skill takes it from raw prompt or ready spec to finished work across N parallel agents.
 
-Requires running inside herdr: `test "${HERDR_ENV:-}" = 1`.
-If the check fails, say so and stop.
-The installed binary is the authority on CLI syntax: run `herdr agent`, `herdr pane`, `herdr tab`, or `herdr worktree` without a subcommand to print a group's usage, or `herdr --skill` for the full guide.
-
-Seven phases, in order.
-Do not skip ahead.
+Eight phases, in order.
+Do not skip ahead, except where Phase 0 says to.
 Phase 4 has a human gate.
+
+## Phase 0 - Intake
+
+Read the invocation: `/fleet [path] [go] [herdr|subagents]`, or the same intent in plain words.
+
+**Path.**
+A spec the user already wrote (`SPEC.md` or any Markdown plan) skips grilling: go to Phase 1 in readiness mode.
+A `TASKS.md` beside it also skips the split: check it against the Phase 3 rules, fill in missing models, and go to the gate.
+No path means a raw request: grill from scratch.
+
+**`go`.**
+The user wants the agents launched without the Phase 4 gate.
+Saying "launch without asking" or "just start" means the same.
+
+**Mode.**
+- `herdr`: each agent is a full interactive session in its own herdr pane, which the user can watch and talk to, on any harness `route` offers.
+  Requires `test "${HERDR_ENV:-}" = 1`.
+- `subagents`: each agent is a background subagent of this session, started with the Agent tool.
+  No panes and no other harnesses, but nothing to set up and nothing to tear down.
+
+Use the mode the user named.
+Otherwise use `herdr` when `HERDR_ENV=1`, and `subagents` when it is not.
+If the user asks for `herdr` outside herdr, say so and stop.
+If the user asks for `subagents` in a harness without a subagent tool, say so and stop.
+
+**Master model.**
+This session is the master, and the master should run on Opus.
+If it does not, say so at the gate; it cannot switch itself, so the user decides whether to restart on Opus.
 
 ## Phase 1 - Grill
 
 Interview the user until the spec has no open questions.
-Ask one question at a time with AskUserQuestion, and put your recommended answer first.
+Ask one question at a time, with AskUserQuestion where the harness has it or else in chat, waiting for each answer, and put your recommended answer first.
 Each answer usually spawns follow-ups; keep going until a new round would produce nothing new.
 
 Before each question, try to answer it yourself from the filesystem, git history, or the codebase.
@@ -37,9 +61,17 @@ Ambiguities that must be resolved before you leave this phase:
 - What existing code must not change.
 - Verification: what command proves each part works.
 
+**Readiness mode**, for a spec the user brought:
+the user has already made their decisions, so do not interview them.
+Read the spec against the exit criterion and the list above, checking facts in the codebase yourself.
+Collect only the gaps that would make two agents decide differently, and ask them all at once, in a single AskUserQuestion call of up to four questions where the harness has it.
+If nothing blocks, ask nothing.
+Gaps you can fill from the codebase, such as a verification command, you fill yourself and mark as inferred in the spec.
+
 ## Phase 2 - Spec
 
 Write `specs/<YYYY-MM-DD>-<slug>/SPEC.md` in the repo.
+For a spec the user brought, copy it there and add only what is missing, leaving their wording alone.
 
 Ensure the artifacts are gitignored.
 Check `.gitignore` for `specs/`; if absent, append it to `.git/info/exclude` rather than editing the user's `.gitignore`.
@@ -68,7 +100,8 @@ One section per discrete piece of work, each with:
 Project-wide rules every agent must follow: style, toolchain, testing, what not to touch.
 
 ## Non-negotiables
-Never commit or push. Never modify CHANGELOG.md or generated files.
+Never commit or push.
+Never modify CHANGELOG.md or generated files.
 Verify with real commands before claiming done.
 ```
 
@@ -95,10 +128,23 @@ Prefer the same checkout when the partition already makes it safe; it is less se
 
 Mixing is fine - research agents in the main checkout, implementers in worktrees.
 
-Then decide the agent kind, per agent: `claude` (default) or `codex`.
-Use codex only when the user asks for it, for all agents or for specific ones; mixing kinds is fine.
-Both read the same SPEC.md, get the same briefing, and follow the same protocol.
-The kind must be installed on PATH (`command -v codex`); if it is not, say so at the gate instead of failing at spawn.
+### Models
+
+Pick each agent's model by its role:
+
+| Role | Model | `route` tier |
+| --- | --- | --- |
+| Implement a work item the spec fully settles | Sonnet | `easy` |
+| Research, read or summarize code, mechanical edits, run checks and report | Haiku | `light` |
+| A work item that still leaves real design open | Opus | `normal` |
+
+The spec settles decisions, so most implementers are Sonnet.
+Every Opus agent needs a one-line reason at the gate; if the reason is an open question, it belongs in Phase 1 instead.
+A model or harness the user named for an item wins over this table.
+
+In `herdr` mode, launch Claude agents with the args of that tier's Claude option from `~/.agents/skills/route/scripts/route.py status`.
+Run that command once anyway, and move an agent to another harness only when the user named one or Claude has under 10% left; then follow the `route` skill for that agent.
+In `subagents` mode every agent is Claude, and the model is the Agent tool's `model`.
 
 Write `TASKS.md` beside the spec:
 
@@ -106,7 +152,8 @@ Write `TASKS.md` beside the spec:
 # Tasks
 
 ## agent-1: <short name>
-- Kind: claude / codex
+- Model: <model> (<role>)
+- Args: <native args, herdr mode only>
 - Isolation: worktree `agent-1-<slug>` / same-branch
 - Owns: <exact files or directories>
 - Must not touch: <files owned by others>
@@ -116,56 +163,17 @@ Write `TASKS.md` beside the spec:
 ```
 
 The "Owns" and "Must not touch" lines are the collision-avoidance contract.
-Be exact. Directories are fine; vague areas are not.
+Be exact.
+Directories are fine; vague areas are not.
 
-## Phase 4 - Gate, then fan out
+## Phase 4 - Gate, then launch
 
-**Stop and show the user** the split before spawning anything: N, each agent's scope, kind, isolation choice, and the reasoning.
+**Stop and show the user** the split before launching anything: the mode, N, each agent's scope, model, isolation, and the reasoning, plus the quota left on Claude in `herdr` mode.
+The user may change any line, so update `TASKS.md` to match.
 Wait for approval.
-Skip this gate only if the user said to launch without asking.
+Skip this gate only under `go`.
 
-### Worktree setup
-
-For each worktree agent:
-
-```bash
-herdr worktree create --cwd <repo> --branch <branch-name> --label <agent-label> --no-focus
-```
-
-Then copy environment files, which git will not carry over.
-Find them in the source repo:
-
-```bash
-git -C <repo> ls-files --others --ignored --exclude-standard \
-  | grep -Ei '(^|/)\.env($|\.)|(^|/)\.dev\.vars$|\.local\.(toml|json|ya?ml)$|(^|/)\.envrc$'
-```
-
-Copy each match into the worktree, preserving its relative path and creating parent directories.
-Never copy tracked files such as `.env.example`.
-Report exactly what was copied, per worktree, so the user can spot a miss.
-
-If the project needs more than env files - installs, migrations, generated clients - run those in the worktree too, and say what you ran.
-
-### Layout
-
-Lay panes out so the user can watch progress without hunting:
-- Up to 3 agents: split them into the master's own tab (`herdr pane split --current --direction right|down --cwd <path> --no-focus`); master plus 3 is the comfortable maximum per tab.
-- More than 3: group them into extra tabs of 3-4 panes each (`herdr tab create --cwd <path> --label <group> --no-focus`, then split within), named by component group; keep the master in the first tab.
-- Worktree agents live in the workspace `herdr worktree create` made for them.
-
-### Spawning
-
-For each agent: get a pane in its working directory, start the agent in it, then prompt it.
-Read pane and agent IDs from the JSON each command returns; never predict them.
-
-```bash
-herdr agent start <agent-name> --kind claude --pane <pane-id>   # or --kind codex
-herdr agent prompt <agent-name> "<briefing>" --wait --until working
-```
-
-Agent names must match `[a-z][a-z0-9_-]{0,31}` and be unique among live agents; make them meaningful.
-Never pass permission, approval, or sandbox flags to any agent kind: no `--permission-mode` for claude, no `--ask-for-approval`, `--sandbox`, `--full-auto`, or bypass flags for codex.
-The machine's configured default for each tool applies; never instruct an agent to change it after launch.
+### The briefing
 
 Each briefing must contain, inline:
 - The absolute path to `SPEC.md` and an instruction to read it first.
@@ -184,11 +192,74 @@ Give every agent this protocol verbatim:
 > Before you claim done, run your verification command and paste the real output.
 > When you are done or blocked, state clearly: DONE or BLOCKED, followed by what happened.
 
+### Herdr mode
+
+The installed binary is the authority on CLI syntax: run `herdr agent`, `herdr pane`, `herdr tab`, or `herdr worktree` without a subcommand to print a group's usage, or `herdr --skill` for the full guide.
+
+**Worktrees.**
+For each worktree agent:
+
+```bash
+herdr worktree create --cwd <repo> --branch <branch-name> --label <agent-label> --no-focus
+```
+
+Then copy environment files, which git will not carry over.
+Find them in the source repo:
+
+```bash
+git -C <repo> ls-files --others --ignored --exclude-standard --directory \
+  | grep -Ei '(^|/)\.env($|\.)|(^|/)\.dev\.vars$|\.local\.(toml|json|ya?ml)$|(^|/)\.envrc$'
+```
+
+Copy each match into the worktree, preserving its relative path and creating parent directories.
+Never copy tracked files such as `.env.example`.
+Report exactly what was copied, per worktree, so the user can spot a miss.
+
+If the project needs more than env files - installs, migrations, generated clients - run those in the worktree too, and say what you ran.
+
+**Layout.**
+Lay panes out so the user can watch progress without hunting:
+- Up to 3 agents: split them into the master's own tab (`herdr pane split --current --direction right|down --cwd <path> --no-focus`); master plus 3 is the comfortable maximum per tab.
+- More than 3: group them into extra tabs of 3-4 panes each (`herdr tab create --cwd <path> --label <group> --no-focus`, then split within), named by component group; keep the master in the first tab.
+- Worktree agents live in the workspace `herdr worktree create` made for them.
+
+**Spawning.**
+For each agent: get a pane in its working directory, start the agent in it, then prompt it.
+Read pane and agent IDs from the JSON each command returns; never predict them.
+
+```bash
+herdr agent start <agent-name> --kind <kind> --pane <pane-id> -- <args...>
+herdr agent prompt <agent-name> "<briefing>" --wait --until working
+```
+
+Agent names must match `[a-z][a-z0-9_-]{0,31}` and be unique among live agents; make them meaningful.
+
+### Subagents mode
+
+Start every agent in one message, so they run in parallel, each with the Agent tool:
+- `prompt`: the briefing.
+- `model`: the agent's model from `TASKS.md`.
+- `subagent_type`: a specialist that matches the work (such as `python` or `typescript`), else `general-purpose`, or `Explore` for read-only research.
+  Never `fork`: a fork ignores `model` and carries this whole conversation instead of the spec.
+- `isolation: "worktree"` for worktree agents.
+  Add to their briefing the absolute paths of the env files found as in herdr mode, with an instruction to copy them into the worktree, preserving relative paths, before anything else.
+- `description`: the agent's short name from `TASKS.md`.
+
+Subagents run in the background, and you are notified as each one finishes.
+Keep each agent's ID: continue it with SendMessage, never by starting a new one.
+
+### Both modes
+
+Never pass permission, approval, or sandbox flags to any agent, and never instruct one to change them after launch.
+The machine's configured default for each tool applies.
+
 ## Phase 5 - Coordinate
 
 You are now the master.
 Stay in this loop until every agent is finished.
 Do not end your turn while agents are running.
+
+In `herdr` mode:
 
 ```bash
 herdr agent list
@@ -197,23 +268,27 @@ herdr agent read <agent-name> --lines 60
 herdr agent prompt <agent-name> "<instruction>"
 ```
 
-Each cycle:
-1. `herdr agent list` for statuses.
-2. For each agent that is idle, blocked, or done: read its recent output.
-3. Decide and act:
-   - Question you can answer from the spec: answer it, do not bother the user.
-   - Genuine ambiguity the spec missed: this is a grilling failure - ask the user, then patch SPEC.md so it stays authoritative.
-   - Agent reports a cross-cutting change: this is the important case, below.
-   - Agent claims done without pasted verification output: send it back to verify.
-4. Relay meaningful progress and problems to the user as they happen, not as a dump at the end.
-5. Wait on agents rather than hammering the socket in a tight loop.
+Wait on agents rather than hammering the socket in a tight loop.
+
+In `subagents` mode, a subagent's final report is its only output: it cannot ask you anything mid-run, so a question arrives as BLOCKED.
+Answer it, or give any other instruction, with SendMessage to its ID.
+Never predict or invent a result for a subagent that has not reported.
+
+For each agent that is idle, blocked, or done, read its output, then decide and act:
+- Question you can answer from the spec: answer it, do not bother the user.
+- Genuine ambiguity the spec missed: this is a grilling failure - ask the user, then patch SPEC.md so it stays authoritative.
+- Agent reports a cross-cutting change: this is the important case, below.
+- Agent claims done without pasted verification output: send it back to verify.
+- Agent keeps going wrong on work its model should handle: the model was too small, so tell the user and restart it one step up (Haiku, Sonnet, Opus) with the same briefing plus what already landed, rather than coaching it turn after turn.
+
+Relay meaningful progress and problems to the user as they happen, not as a dump at the end.
 
 ### Cross-agent scope changes
 
 When agent 1 reports "my fix will affect agent 2's area":
 
 1. Read agent 1's reasoning and verify it against the code yourself.
-2. Decide the new boundary. You own this decision, not the agents.
+2. Decide the new boundary; you own this decision, not the agents.
 3. Update `SPEC.md` and `TASKS.md` to reflect it.
 4. Message **both** agents immediately with the new boundary - the one gaining scope and the one losing it.
 5. Tell the agent losing scope explicitly what to stop doing, and whether to revert anything already written.
@@ -222,7 +297,7 @@ When agent 1 reports "my fix will affect agent 2's area":
 Never let two agents believe they own the same file.
 When in doubt, pause one agent while the other lands its change.
 
-If an agent dies or its pane is lost, respawn it with the same briefing plus a note about what already landed.
+If an agent dies or its pane is lost, start it again with the same briefing plus a note about what already landed.
 
 ## Phase 6 - Verify and report
 
@@ -270,9 +345,11 @@ Never claim done for work you did not see verified.
 
 ## Phase 7 - Teardown
 
-Close an agent's pane (`herdr pane close <pane-id>`) only after its work is verified and captured in `REPORT.md`, so nothing is lost.
+In `herdr` mode, close an agent's pane (`herdr pane close <pane-id>`) only after its work is verified and captured in `REPORT.md`, so nothing is lost.
 Close them one at a time, confirming each agent's work landed before closing it.
-Leave worktrees in place for the user to merge or review; say which branches exist.
+In `subagents` mode there is nothing to close; just confirm none is still running.
+
+Leave worktrees in place for the user to merge or review; say which branches exist and where.
 Leave nothing running when the task is done.
 
 ## Rules

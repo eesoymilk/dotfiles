@@ -147,8 +147,15 @@ ln -sf "$HOME/AGENTS.md" "$HOME/.codex/AGENTS.md"
 # Claude Code loads skills from ~/.claude/skills; the shared ones live in
 # ~/.agents/skills so Codex sees the same files. Only these are shared:
 # the curated skills stowed alongside them are Codex-only.
-for skill in brainstorm big-task herdr route wt-open wt-cleanup ship; do
+for skill in brainstorm fleet herdr route wt-open wt-cleanup ship; do
 	ln -sfn "../../.agents/skills/$skill" "$HOME/.claude/skills/$skill"
+done
+
+# A skill removed or renamed in the repo leaves its old link dangling.
+for link in "$HOME"/.claude/skills/* "$HOME"/.agents/skills/*; do
+	if [ -L "$link" ] && [ ! -e "$link" ]; then
+		rm "$link"
+	fi
 done
 
 echo "Linked common + $OS_PKG into $HOME. Restart your shell to pick up .zshrc."
