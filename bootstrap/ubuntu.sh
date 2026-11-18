@@ -77,7 +77,7 @@ log "Detected $(uname -m) ($(. /etc/os-release && echo "$PRETTY_NAME"))"
 install_apt() {
 	sudo apt-get update -qq
 	sudo apt-get install -y --no-install-recommends \
-		zsh stow tmux git curl wget unzip tar gzip ca-certificates gnupg \
+		zsh stow git curl wget unzip tar gzip ca-certificates gnupg \
 		build-essential pkg-config \
 		fd-find bat ripgrep jq file \
 		wl-clipboard xclip \
@@ -85,8 +85,8 @@ install_apt() {
 		bubblewrap apparmor-profiles apparmor-utils
 
 	# Ubuntu renames both binaries to avoid collisions with older packages.
-	# The `cat=bat` alias in .zshrc and the `fd` call in tmux-sessionizer expect
-	# the upstream names, so bridge them.
+	# The `cat=bat` alias in .zshrc and tools that shell out to `fd` expect the
+	# upstream names, so bridge them.
 	[ -e "$BIN/fd" ] || ln -sf "$(command -v fdfind)" "$BIN/fd"
 	[ -e "$BIN/bat" ] || ln -sf "$(command -v batcat)" "$BIN/bat"
 }
@@ -278,6 +278,17 @@ install_lazygit() {
 	fi
 }
 
+# ------------------------------------------------------------------- herdr
+# Official (herdr README): the upstream install script. It installs to
+# ~/.local/bin (which is $BIN) and never edits a shell rc.
+install_herdr() {
+	if have herdr; then
+		echo "  already present"
+		return 0
+	fi
+	curl -fsSL https://herdr.dev/install.sh | sh
+}
+
 # ------------------------------------------------------------------- oxker
 # Official (oxker README): the upstream install script. It downloads into the
 # current directory and installs to ~/.local/bin (which is $BIN), so run it
@@ -404,7 +415,7 @@ link_dotfiles() {
 }
 
 # ----------------------------------------------------------- yazi packages
-# Unlike zinit and TPM, yazi does not self-install its plugins: init.lua
+# Unlike zinit, yazi does not self-install its plugins: init.lua
 # `require`s them outright, so a fresh machine fails to start yazi at all.
 # plugins/ and flavors/ are gitignored, so this has to run after stow puts
 # package.toml in place. `install` honours the pinned revs; `upgrade` would
@@ -455,6 +466,7 @@ step "fzf (official git method)" install_fzf
 step "zoxide (official install script)" install_zoxide
 step "oh-my-posh (official install script)" install_oh_my_posh
 step "lazygit (apt, else official release recipe)" install_lazygit
+step "herdr (official install script)" install_herdr
 step "oxker (official install script)" install_oxker
 step "git-delta (official .deb)" install_delta
 step "GitHub CLI (official apt repository)" install_gh
@@ -477,7 +489,7 @@ step "Default shell" set_default_shell
 log "Verifying tools resolve on the shell PATH"
 CHECK_PATH="$HOME/.local/bin:$HOME/.fzf/bin:/opt/nvim/bin:/usr/local/bin:/usr/local/go/bin:$PATH"
 missing=""
-for t in nvim tree-sitter tmux zsh stow fd bat eza zoxide oh-my-posh yazi ya ghostty lazygit oxker delta git gh rg jq python3 claude codex; do
+for t in nvim tree-sitter herdr zsh stow fd bat eza zoxide oh-my-posh yazi ya ghostty lazygit oxker delta git gh rg jq python3 claude codex; do
 	PATH="$CHECK_PATH" command -v "$t" >/dev/null 2>&1 || missing="$missing $t"
 done
 # Presence is not enough for fzf: an old apt build resolves fine but has no --zsh.
@@ -513,10 +525,9 @@ fi
 log "Then:"
 cat <<'EOF'
   1. zinit auto-installs plugins on first zsh launch (wait a few seconds)
-  2. Start tmux once; TPM auto-clones and installs plugins
-  3. nvm install --lts
-  4. Set your terminal font to "JetBrainsMono Nerd Font"
-  5. Run `claude` and `codex` once each to log in
+  2. nvm install --lts
+  3. Set your terminal font to "JetBrainsMono Nerd Font"
+  4. Run `claude` and `codex` once each to log in
 EOF
 
 if [ "${#STEPS_FAILED[@]}" -gt 0 ]; then

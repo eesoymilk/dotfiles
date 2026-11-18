@@ -4,7 +4,7 @@
 # `./install.sh --bootstrap`.
 #
 # Omarchy already provides the desktop (Hyprland, bar, launcher, lock, idle,
-# notifications, screenshots, dictation) and most of the CLI set: nvim, tmux,
+# notifications, screenshots, dictation) and most of the CLI set: nvim,
 # herdr, lazygit, fzf, zoxide, eza, bat, fd, ripgrep, jq, tree-sitter,
 # wl-clipboard, docker, the JetBrainsMono Nerd Font, and mise, which manages
 # node, gh, claude, and codex. This script only fills the gaps, through
@@ -140,7 +140,7 @@ step "Default shell" set_default_shell
 log "Verifying tools resolve on the shell PATH"
 CHECK_PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:/usr/local/bin:$PATH"
 missing=""
-for t in ghostty nvim tree-sitter tmux herdr zsh stow fd bat eza zoxide oh-my-posh yazi ya lazygit oxker delta git gh rg jq fzf mise python3 claude codex; do
+for t in ghostty nvim tree-sitter herdr zsh stow fd bat eza zoxide oh-my-posh yazi ya lazygit oxker delta git gh rg jq fzf mise python3 claude codex; do
 	PATH="$CHECK_PATH" command -v "$t" >/dev/null 2>&1 || missing="$missing $t"
 done
 PATH="$CHECK_PATH" fzf --zsh >/dev/null 2>&1 || missing="$missing fzf(--zsh-unsupported)"

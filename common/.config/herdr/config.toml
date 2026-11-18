@@ -7,7 +7,7 @@
 onboarding = false
 
 [theme]
-# Use the terminal's own palette, like tmux, so the Omarchy theme switcher
+# Use the terminal's own palette so the Omarchy theme switcher
 # recolours it (and it stays Catppuccin wherever ghostty is).
 name = "terminal"
 
@@ -18,10 +18,9 @@ auto_switch = false
 panel_bg = "black"
 
 [keys]
-# Same prefix as tmux for muscle memory.
 prefix = "ctrl+a"
 
-# Mirror tmux split: prefix+- horizontal (default), keep prefix+v vertical.
+# prefix+- splits horizontally (default), prefix+v vertically.
 split_horizontal = "prefix+minus"
 # Move the focused pane around the layout, shifted hjkl mirroring focus_pane_*.
 swap_pane_left = "prefix+shift+h"
@@ -79,7 +78,7 @@ hide_tab_bar_when_single_tab = true
 # Hide pane scrollbars and reclaim their reserved column.
 pane_scrollbars = false
 
-# Tab row below panes, tmux-style.
+# Tab row below panes.
 tab_bar_position = "bottom"
 
 # Attention queue: blocked agents bubble to the top of the sidebar.
