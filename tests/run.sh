@@ -8,7 +8,7 @@
 set -uo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$REPO"
+cd "$REPO" || exit
 
 targets=("$@")
 [ "${#targets[@]}" -eq 0 ] && targets=(ubuntu)

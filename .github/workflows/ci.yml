@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # The bootstraps pull upstream installers at HEAD, so they can break without
+  # any change here.
+  schedule:
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: jdx/mise-action@82a612c5ab8bcda7cc5db6b7e81a8e7584c3dc6e # v5.2.3
+        with:
+          mise_toml: |
+            [tools]
+            shellcheck = "0.11.0"
+            shfmt = "3.14.1"
+            actionlint = "1.7.12"
+            uv = "0.13.6"
+      - run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends zsh
+      - run: ./tests/lint.sh
+      - run: actionlint
+
+  e2e-ubuntu:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: ./tests/run.sh ubuntu
+
+  e2e-macos:
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # Same contract as tests/Dockerfile.ubuntu: the bootstrap reports its own
+      # failed steps, and verify.sh is the hard assertion.
+      - run: ./install.sh --bootstrap || echo "bootstrap reported failed steps (see summary above)"
+      - run: ./tests/verify.sh

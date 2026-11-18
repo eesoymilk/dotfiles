@@ -2,6 +2,8 @@
 # Assert the installed state a fresh machine should end up in after
 # `./install.sh --bootstrap`. Run inside the test containers, but safe to run
 # on a real machine too. Hard assertions: any failure fails the run.
+# The "~/..." strings are display labels, not paths to expand.
+# shellcheck disable=SC2088
 set -uo pipefail
 
 FAILED=0
