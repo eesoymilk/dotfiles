@@ -19,3 +19,6 @@ common/.claude/settings.local.json
 
 # waystt secrets
 arch/.config/waystt/.env
+
+# Python bytecode caches from the skill scripts
+__pycache__/
