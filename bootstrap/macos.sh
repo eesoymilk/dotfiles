@@ -54,13 +54,13 @@ install_formulae() {
 	brew install \
 		stow herdr fzf zoxide eza bat fd ripgrep jq \
 		gh lazygit oxker git-delta \
-		neovim yazi oh-my-posh tree-sitter
+		neovim yazi oh-my-posh tree-sitter-cli
 }
 
 # --------------------------------------------------------------- brew casks
 install_casks() {
 	eval "$(/opt/homebrew/bin/brew shellenv)"
-	brew install --cask ghostty aerospace font-jetbrains-mono-nerd-font
+	brew install --cask ghostty nikitabobko/tap/aerospace font-jetbrains-mono-nerd-font
 }
 
 # --------------------------------------------------------------------- nvm
