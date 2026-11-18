@@ -6,3 +6,6 @@ sandbox_mode = "workspace-write"
 
 [tui]
 status_line = ["model-with-reasoning", "context-remaining", "five-hour-limit", "weekly-limit", "git-branch", "current-dir"]
+
+[features]
+hooks = true
