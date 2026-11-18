@@ -35,7 +35,10 @@ After the commit, delete that file, unset the variable, and run `git reset -q --
 Run the `code-review` skill without choosing a level for it, giving it this work's paths if other uncommitted changes exist.
 If that skill is not available, review the diff yourself for correctness bugs.
 
-Fix what it finds that is in scope, and stage the fixes.
+Then look for code smells in the changed code: duplication, dead code, needless abstractions, unclear names, deep nesting, and functions doing too much.
+Use the `simplify` skill for this if it is available, limited to this work's paths so it leaves other uncommitted changes alone.
+
+Fix what both checks find that is in scope, and stage the fixes.
 Stop and ask if a finding needs a decision that is the user's.
 Tell the user about out-of-scope findings instead of fixing them.
 
