@@ -88,7 +88,6 @@ alias ga='git add'
 alias gac='git commit -am'
 alias gc='git commit'
 alias gp='git push'
-alias tms='tmux-sessionizer'
 
 # Shell integrations
 eval "$(fzf --zsh)"

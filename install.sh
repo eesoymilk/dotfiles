@@ -124,7 +124,6 @@ if [ -n "$conflicts" ]; then
 fi
 
 stow -d "$DOTFILES" -t "$HOME" common "$OS_PKG"
-chmod +x "$HOME/.local/bin/tmux-sessionizer" 2>/dev/null || true
 
 # Omarchy: ~/.config/ghostty/config is Omarchy's own file (see the header of
 # omarchy/.config/ghostty/user.conf). Seed it if missing and make it include

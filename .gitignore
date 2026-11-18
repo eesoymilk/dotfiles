@@ -7,10 +7,6 @@ common/.config/configstore/
 # uv self-update receipt: machine-local install bookkeeping, not config
 common/.config/uv/
 
-# tmux: TPM clones plugins here at runtime; keep dir present via .gitkeep
-common/.config/tmux/plugins/*
-!common/.config/tmux/plugins/.gitkeep
-
 # vercel plugin runtime state
 common/.config/vercel-plugin/
 

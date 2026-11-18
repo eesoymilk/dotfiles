@@ -16,7 +16,6 @@ vim.keymap.set("n", "<leader>Y", [["+Y]], { desc = "Copy line to clipboard" })
 vim.keymap.set("v", ">", ">gv", { desc = "Indent selection" })
 vim.keymap.set("v", "<", "<gv", { desc = "Unindent selection" })
 
-vim.keymap.set("n", "<C-f>", "<cmd>silent !tmux neww tmux-sessionizer<CR>", { desc = "Open tmux sessionizer" })
 -- vim.keymap.set("n", "<leader>f", vim.lsp.buf.format)
 
 vim.keymap.set("n", "<C-k>", "<cmd>cnext<CR>zz")

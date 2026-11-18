@@ -43,13 +43,12 @@ echo "Symlinks:"
 link_into_repo "$HOME/.zshrc" "~/.zshrc"
 link_into_repo "$HOME/AGENTS.md" "~/AGENTS.md"
 link_into_repo "$HOME/.config/nvim" "~/.config/nvim"
-link_into_repo "$HOME/.config/tmux/tmux.conf" "~/.config/tmux/tmux.conf"
+link_into_repo "$HOME/.config/herdr/config.toml" "~/.config/herdr/config.toml"
 link_into_repo "$HOME/.config/ohmyposh" "~/.config/ohmyposh"
 link_into_repo "$HOME/.config/zsh/pre.zsh" "~/.config/zsh/pre.zsh (from $OS_PKG)"
 link_into_repo "$HOME/.config/zsh/post.zsh" "~/.config/zsh/post.zsh (from $OS_PKG)"
 link_into_repo "$HOME/.claude/agents" "~/.claude/agents"
 link_into_repo "$HOME/.claude/CLAUDE.md" "~/.claude/CLAUDE.md"
-link_into_repo "$HOME/.local/bin/tmux-sessionizer" "~/.local/bin/tmux-sessionizer"
 
 # ~/.agents/skills is a real dir holding machine-local skills too, so assert
 # each repo-provided skill rather than the directory. The first two are shared
@@ -79,12 +78,6 @@ if [ -e "${codex_agents[0]}" ]; then
 	done
 else
 	fail "common/.codex/agents contains at least one agent TOML"
-fi
-
-if [ -x "$HOME/.local/bin/tmux-sessionizer" ]; then
-	pass "tmux-sessionizer is executable"
-else
-	fail "tmux-sessionizer is executable"
 fi
 
 # These must stay real directories, never symlinks into the repo: apps write
@@ -119,7 +112,7 @@ fi
 echo
 echo "Tools on the shell PATH:"
 CHECK_PATH="$HOME/.local/bin:$HOME/.local/share/mise/shims:$HOME/.fzf/bin:/opt/nvim/bin:/usr/local/bin:/usr/local/go/bin:$PATH"
-for t in nvim tree-sitter tmux zsh stow fd bat eza zoxide oh-my-posh yazi ya lazygit delta git gh rg jq fzf python3 claude codex; do
+for t in nvim tree-sitter herdr zsh stow fd bat eza zoxide oh-my-posh yazi ya lazygit delta git gh rg jq fzf python3 claude codex; do
 	if PATH="$CHECK_PATH" command -v "$t" >/dev/null 2>&1; then
 		pass "$t"
 	else

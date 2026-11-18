@@ -52,7 +52,7 @@ install_brew() {
 install_formulae() {
 	eval "$(/opt/homebrew/bin/brew shellenv)"
 	brew install \
-		stow tmux fzf zoxide eza bat fd ripgrep jq \
+		stow herdr fzf zoxide eza bat fd ripgrep jq \
 		gh lazygit oxker git-delta \
 		neovim yazi oh-my-posh tree-sitter
 }
@@ -133,7 +133,7 @@ log "Verifying tools resolve on the shell PATH"
 eval "$(/opt/homebrew/bin/brew shellenv)" 2>/dev/null || true
 CHECK_PATH="$HOME/.local/bin:$PATH"
 missing=""
-for t in nvim tree-sitter tmux zsh stow fd bat eza zoxide oh-my-posh yazi ya lazygit oxker delta git gh rg jq fzf python3 claude codex; do
+for t in nvim tree-sitter herdr zsh stow fd bat eza zoxide oh-my-posh yazi ya lazygit oxker delta git gh rg jq fzf python3 claude codex; do
 	PATH="$CHECK_PATH" command -v "$t" >/dev/null 2>&1 || missing="$missing $t"
 done
 PATH="$CHECK_PATH" fzf --zsh >/dev/null 2>&1 || missing="$missing fzf(--zsh-unsupported)"
@@ -156,10 +156,9 @@ printf '\n  %d ok, %d failed\n' "${#STEPS_OK[@]}" "${#STEPS_FAILED[@]}"
 log "Then:"
 cat <<'EOF'
   1. zinit auto-installs plugins on first zsh launch (wait a few seconds)
-  2. Start tmux once; TPM auto-clones and installs plugins
-  3. nvm install --lts
-  4. Set your terminal font to "JetBrainsMono Nerd Font"
-  5. Run `claude` and `codex` once each to log in
+  2. nvm install --lts
+  3. Set your terminal font to "JetBrainsMono Nerd Font"
+  4. Run `claude` and `codex` once each to log in
 EOF
 
 if [ "${#STEPS_FAILED[@]}" -gt 0 ]; then
