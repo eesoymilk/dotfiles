@@ -8,13 +8,18 @@ description: Open a git worktree as its own herdr workspace, start a coding agen
 Spin up one isolated worktree for one task, hand it to a fresh agent, and get out of the way.
 The user drives the new agent from here on; you do not coordinate it.
 
-## 1. Run the script
+## 1. Pick the agent
+
+Follow the `route` skill to choose the harness, model, and effort, and to confirm them with the user.
+It gives you a `kind` and the native `args` to launch it with.
+
+## 2. Run the script
 
 Make one Bash call per worktree, with a 5-minute timeout.
 Do not run preflight checks first; the script does them and creates nothing if they fail.
 
 ```bash
-~/.agents/skills/wt-open/scripts/wt_open.py --branch <type>/<short-kebab-slug> <<'BRIEF'
+~/.agents/skills/wt-open/scripts/wt_open.py --branch <type>/<short-kebab-slug> --kind <kind> -- <args...> <<'BRIEF'
 <briefing>
 BRIEF
 ```
@@ -28,7 +33,6 @@ Add these flags only when needed:
 - `--repo <path>`: a repo other than the current directory's.
 - `--base <ref>`: anything other than the default branch of `upstream`, or of `origin` if there is no `upstream`.
 - `--label <slug>`: a workspace and agent name other than the one derived from the branch.
-- `--kind <agent>`: an agent other than `claude`.
 
 The briefing must let an agent with no access to this conversation start immediately:
 
@@ -41,9 +45,9 @@ The briefing must let an agent with no access to this conversation start immedia
 Do not restate rules the agent already loads from `AGENTS.md`.
 The script appends the worktree path, the branch, and the instruction to start now.
 
-## 2. Act on the `status` it prints
+## 3. Act on the `status` it prints
 
-- `started`: go to step 3.
+- `started`: go to step 4.
 - `blocked`: the worktree exists and the agent is waiting on the dialog in `pane_tail`.
   Show the user that dialog and do not answer it for them.
   If `briefing` is `not_sent`, send it with `herdr agent prompt <agent> "<briefing>" --wait --until working --timeout 60000` once the user has cleared the dialog, adding the worktree path and branch.
@@ -53,11 +57,12 @@ The script appends the worktree path, the branch, and the instruction to start n
   If herdr refuses with a repository trust error, never add `--trust-repository` on your own.
   If the branch name is taken, pick another and run the script again.
 
-## 3. Hand back
+## 4. Hand back
 
 Report in a few lines, then end your turn:
 
 - Workspace label and agent name.
+- Tier, harness, model, and effort.
 - Branch, base, and worktree path.
 - Env files copied, or "none".
 - A one-line summary of the briefing.

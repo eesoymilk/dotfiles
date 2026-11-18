@@ -1,0 +1,3 @@
+interface:
+  display_name: "Route"
+  short_description: "Pick a harness, model, and effort for a delegated agent"

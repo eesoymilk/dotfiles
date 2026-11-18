@@ -87,7 +87,8 @@ elif args[:2] == ["agent", "list"]:
         sys.exit("agent list failed")
     print(json.dumps({{"result": {{"agents": [{{"name": n}} for n in state["agents"]] + [{{}}]}}}}))
 elif args[:2] == ["agent", "start"]:
-    log({{"call": "start", "name": args[2], "kind": flag("--kind")}})
+    extra = args[args.index("--") + 1 :] if "--" in args else []
+    log({{"call": "start", "name": args[2], "kind": flag("--kind"), "args": extra}})
     if state.get("start_error"):
         sys.exit(state["start_error"])
     print("{{}}")
@@ -197,7 +198,7 @@ def test_opens_a_worktree_and_briefs_the_agent(tmp_path: Path) -> None:
     assert (code, out["status"]) == (0, "started")
     assert (out["branch"], out["base"], out["agent"]) == (BRANCH, "origin/main", "new-thing")
     assert box.branch_exists()
-    assert box.call("start") == {"call": "start", "name": "new-thing", "kind": "claude"}
+    assert box.call("start") == {"call": "start", "name": "new-thing", "kind": "claude", "args": []}
     text = box.call("prompt")["text"]
     assert text.startswith("Goal: x")
     assert f"worktree {out['path']} on branch {BRANCH}" in text
@@ -299,6 +300,14 @@ def test_label_and_kind_are_passed_through(tmp_path: Path) -> None:
     _, out = box.run("--branch", BRANCH, "--label", "custom", "--kind", "codex")
     assert (out["label"], out["agent"]) == ("custom", "custom")
     assert box.call("start")["kind"] == "codex"
+
+
+def test_agent_args_after_the_separator_reach_the_agent(tmp_path: Path) -> None:
+    box = Sandbox(tmp_path)
+    agent_args = ["--model", "gpt-6-luna", "-c", "model_reasoning_effort=low"]
+    _, out = box.run("--branch", BRANCH, "--kind", "codex", "--", *agent_args)
+    assert (out["kind"], out["agent_args"]) == ("codex", agent_args)
+    assert box.call("start")["args"] == agent_args
 
 
 def test_startup_dialog_reports_blocked_without_sending_the_briefing(tmp_path: Path) -> None:
