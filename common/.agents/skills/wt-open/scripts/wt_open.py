@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Open a git worktree as a herdr workspace and brief a new agent in it.
 
-The briefing comes from stdin. Prints one JSON object describing the outcome.
+The briefing comes from stdin, and arguments after `--` go to the agent itself.
+Prints one JSON object describing the outcome.
 """
 # pyright: strict
 
@@ -152,7 +153,13 @@ def copy_env_files(repo: str, worktree: str) -> list[str]:
 
 
 def start_agent(
-    report: dict[str, Any], label: str, kind: str, brief: str, path: str, branch: str
+    report: dict[str, Any],
+    label: str,
+    kind: str,
+    agent_args: list[str],
+    brief: str,
+    path: str,
+    branch: str,
 ) -> bool:
     pane = str(report["pane"])
 
@@ -174,7 +181,8 @@ def start_agent(
     agent = unique_name(agent_slug(label), taken)
     report["agent"] = agent
 
-    started = run("herdr", "agent", "start", agent, "--kind", kind, "--pane", pane)
+    extra = ["--", *agent_args] if agent_args else []
+    started = run("herdr", "agent", "start", agent, "--kind", kind, "--pane", pane, *extra)
     if not started.ok:
         if "agent_not_ready" not in started.message:
             raise RuntimeError(started.message)
@@ -209,10 +217,13 @@ def main() -> bool:
     parser.add_argument("--base")
     parser.add_argument("--label")
     parser.add_argument("--kind", default="claude")
+    parser.add_argument("agent_args", nargs="*", help="native agent arguments, after --")
     args = parser.parse_args()
     branch = cast(str, args.branch)
     base_arg = cast("str | None", args.base)
     label_arg = cast("str | None", args.label)
+    kind = cast(str, args.kind)
+    agent_args = cast("list[str]", args.agent_args)
 
     if os.environ.get("HERDR_ENV") != "1":
         raise RuntimeError("not running inside herdr")
@@ -252,11 +263,13 @@ def main() -> bool:
         "branch": branch,
         "base": base,
         "path": path,
+        "kind": kind,
+        "agent_args": agent_args,
     }
 
     try:
         report["env_files"] = copy_env_files(repo, path)
-        return start_agent(report, label, cast(str, args.kind), brief, path, branch)
+        return start_agent(report, label, kind, agent_args, brief, path, branch)
     except Exception as e:  # noqa: BLE001
         # The worktree exists at this point; report it so nobody creates it again.
         emit({"status": "error", "error": f"{type(e).__name__}: {e}", **report})

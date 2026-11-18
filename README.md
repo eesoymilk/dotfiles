@@ -44,7 +44,7 @@ cd ~/dotfiles
 
 `install.sh` detects the OS, stows `common` + the OS package, and backs up any conflicting real files to `~/dotfiles-backup-<timestamp>/`.
 Before replacing `~/.config/git/config` it copies any `user.name`/`user.email` found there into `~/.gitconfig`, so the identity Omarchy's installer wrote survives.
-It then links `~/.claude/CLAUDE.md` and `~/.codex/AGENTS.md` -> `~/AGENTS.md`, and the shared `brainstorm` and `big-task` skills into `~/.claude/skills/`.
+It then links `~/.claude/CLAUDE.md` and `~/.codex/AGENTS.md` -> `~/AGENTS.md`, and the shared hand-written skills into `~/.claude/skills/`.
 Safe to re-run; credentials, session history, and caches under `~/.claude` and `~/.codex` are never touched.
 
 Bootstrap installs every tool by its officially documented method (Claude Code and Codex via their standalone installers) and never lets one failed step abort the rest; the summary at the end names anything that failed and re-running retries only that.
@@ -62,17 +62,18 @@ Claude Code and Codex share one instruction file and one skills directory; each 
 |                   | Claude Code                                                     | Codex                                                       |
 |-------------------|-----------------------------------------------------------------|-------------------------------------------------------------|
 | Instructions      | `~/.claude/CLAUDE.md` -> `~/AGENTS.md`                          | `~/.codex/AGENTS.md` -> `~/AGENTS.md`                       |
-| Skills            | `~/.claude/skills/{brainstorm,big-task}` -> `~/.agents/skills/` | `~/.agents/skills/`                                         |
+| Skills            | `~/.claude/skills/<shared>` -> `~/.agents/skills/`              | `~/.agents/skills/`                                         |
 | Specialist agents | `~/.claude/agents/*.md`                                         | `~/.codex/agents/*.toml`                                    |
 | Permissions       | auto mode                                                       | on-request approvals + Auto-review, workspace-write sandbox |
 | Footer            | `~/.claude/statusline.sh`                                       | native footer                                               |
 | Herdr pane        | `prefix+alt+c`                                                  | `prefix+alt+x`                                              |
 
-- **Skills**: `common/.agents/skills` is the canonical home. `brainstorm` and `big-task` are hand-written and shared; Claude Code reaches them through the links `install.sh` creates. `gh-address-comments`, `gh-fix-ci`, `playwright`, `security-best-practices`, and `security-threat-model` are vendored from [openai/skills](https://github.com/openai/skills) for Codex, so a fresh bootstrap needs no second install step.
-- **Skill scripts**: `wt-open` and `wt-cleanup` do their mechanical work in single-file Python scripts under each skill's `scripts/`. They use only the standard library, so there is no install step.
+- **Skills**: `common/.agents/skills` is the canonical home. `brainstorm`, `big-task`, `herdr`, `route`, `wt-open`, `wt-cleanup`, and `ship` are hand-written and shared; Claude Code reaches them through the links `install.sh` creates. `gh-address-comments`, `gh-fix-ci`, `playwright`, `security-best-practices`, and `security-threat-model` are vendored from [openai/skills](https://github.com/openai/skills) for Codex, so a fresh bootstrap needs no second install step.
+- **Skill scripts**: `route`, `wt-open`, `wt-cleanup`, and `ship` do their mechanical work in single-file Python scripts under each skill's `scripts/`. They use only the standard library, so there is no install step.
 - **Specialist agents**: the same five roles on both sides - Python, TypeScript, debugger, code reviewer, and Git workflow. Claude Code reads Markdown under `.claude/agents`; Codex reads TOML under `.codex/agents`.
-- **Auto-review**: `~/.codex/config.toml` sets `approval_policy = "on-request"`, `approvals_reviewer = "auto_review"`, and `sandbox_mode = "workspace-write"`, the Codex equivalent of Claude Code auto mode. It keeps `gpt-5.6-sol` at `medium` reasoning. Herdr launches plain `codex` so this file stays in charge of permissions.
-- **Footer**: Claude Code renders `statusline.sh`. Codex uses its native TUI footer showing model and reasoning, remaining context, Git branch, and current directory, in that order; it does not reuse the Claude script or layout.
+- **Auto-review**: `~/.codex/config.toml` sets `approval_policy = "on-request"`, `approvals_reviewer = "auto_review"`, and `sandbox_mode = "workspace-write"`, the Codex equivalent of Claude Code auto mode. It keeps `gpt-6.1-sol` at `medium` reasoning. Herdr launches plain `codex` so this file stays in charge of permissions.
+- **Model routing**: `route` sends each delegated agent to the cheapest tier that fits the task - from the local llama.cpp model through pi up to Fable or GPT-6 Astra - and to whichever of Claude Code and Codex has more quota left. `wt-open` uses it. Edit `TIERS` in `route/scripts/route.py` to change the models.
+- **Footer**: Claude Code renders `statusline.sh`, which also caches its rate limits in `~/.cache/claude/rate-limits.json` for `route`. Codex uses its native TUI footer showing model and reasoning, remaining context, Git branch, and current directory, in that order; it does not reuse the Claude script or layout.
 
 ## 🧪 Tests
 
