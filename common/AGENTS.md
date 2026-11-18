@@ -12,13 +12,16 @@ Common instructions for soymilk's agents across all scenarios.
 - In long Markdown files, put each full sentence on its own line.
 - Prefer quality, simplicity, robustness, and maintainability over development cost.
 - Bug fixes: reproduce the bug E2E as an end user would hit it before fixing.
-- Be picky about UI polish and engineering excellence (lint, flaky tests) - fix issues you spot even if unrelated.
+- Be picky about UI polish and engineering excellence (lint, flaky tests): fix small issues you spot in files you are already touching, and report the rest instead of fixing them.
 - Minimum code that solves the problem. No speculative features or single-use abstractions.
 - Touch only what the request requires. No drive-by refactors; match existing style.
 - Clean up orphans your change created; leave pre-existing dead code alone.
 - Verify before claiming done: run tests/lint, state actual results.
 - Python: uv, full type hints, ruff, pyright, pytest.
 - TypeScript: pnpm, strictest tsconfig, zod, vitest.
-- When spawning agent instances (herdr or otherwise), never override the user's permission setup from the command line or after launch; the global config already sets the intended default - leave it.
-  - Claude Code: never pass --permission-mode and never toggle the permission mode after launch (no shift+tab, no /permissions). The global default is "auto" mode. Do NOT switch spawned agents to acceptEdits.
-  - Codex: launch plain `codex`. Never pass --ask-for-approval, --sandbox, --approve-for-me, --dangerously-bypass-approvals-and-sandbox, or -c overrides for approval_policy, approvals_reviewer, or sandbox_mode; ~/.codex/config.toml sets on-request approval with Auto-review and a workspace-write sandbox.
+- Never override permission, approval, or sandbox settings on agents you spawn, at launch or after; the machine's config sets the intended defaults.
+- Pick a model for every subagent or delegated agent by the work it does, and set it explicitly (in Claude Code, the Agent tool's `model`); a model the user names wins.
+  - Opus: planning, design, review, and debugging or features that still leave decisions open.
+  - Sonnet: coding where what to change and where is already settled.
+  - Haiku: searching, reading, or summarizing code, mechanical edits, and running commands to report their output.
+  - Never use a fork for work meant for a cheaper model: a fork always runs on the parent's model.
