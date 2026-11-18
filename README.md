@@ -80,9 +80,12 @@ Fresh-container E2E: build runs the real `./install.sh --bootstrap`, then `tests
 
 ```sh
 ./tests/run.sh          # ubuntu (docker required, takes a while)
+./tests/lint.sh         # shellcheck, shfmt, zsh -n, and the skill scripts' Python checks
 ```
 
 macOS and Omarchy cannot run in docker; run `tests/verify.sh` on those machines after installing.
+CI (`.github/workflows/ci.yml`) runs the lint, the Ubuntu docker E2E, and the same bootstrap + verify on a macOS runner, on every push to `main`, every PR, and weekly to catch upstream installers that changed under us.
+Omarchy stays a manual check.
 (The Omarchy machine has probably shipped a kernel update since you started reading this sentence.)
 
 ## 🕰️ History
