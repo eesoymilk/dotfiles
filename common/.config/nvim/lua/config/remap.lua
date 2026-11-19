@@ -23,7 +23,12 @@ vim.keymap.set("n", "<C-j>", "<cmd>cprev<CR>zz")
 vim.keymap.set("n", "<leader>k", "<cmd>lnext<CR>zz")
 vim.keymap.set("n", "<leader>j", "<cmd>lprev<CR>zz")
 
-vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]])
+vim.keymap.set(
+	"n",
+	"<leader>S",
+	[[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]],
+	{ desc = "Substitute word under cursor" }
+)
 vim.keymap.set("n", "<leader>x", "<cmd>!chmod +x %<CR>", { silent = true })
 
 vim.keymap.set("n", "<leader><leader>", vim.cmd.so, { desc = "Source file" })
@@ -34,11 +39,3 @@ vim.keymap.set(
 	"<cmd>lua vim.diagnostic.open_float({ scope = 'line' })<CR>",
 	{ desc = "Open line diagnostics" }
 )
-
--- Spell checking keybindings
-vim.keymap.set("n", "<leader>st", "<cmd>setlocal spell!<CR>", { desc = "Toggle spell checking" })
-vim.keymap.set("n", "<leader>ss", "z=", { desc = "Show spell suggestions" })
-vim.keymap.set("n", "<leader>sa", "zg", { desc = "Add word to dictionary" })
-vim.keymap.set("n", "<leader>sr", "zw", { desc = "Mark word as misspelled" })
-vim.keymap.set("n", "]s", "]s", { desc = "Next misspelled word" })
-vim.keymap.set("n", "[s", "[s", { desc = "Previous misspelled word" })

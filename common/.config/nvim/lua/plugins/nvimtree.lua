@@ -5,14 +5,13 @@ return {
   cond = not vim.g.vscode,
   dependencies = {
     "nvim-tree/nvim-web-devicons",
-    "antosha417/nvim-lsp-file-operations",
-    "echasnovski/mini.base16",
+    { "antosha417/nvim-lsp-file-operations", config = true },
   },
   keys = {
     {
       "<leader>n",
       function()
-        require("nvim-tree.api").tree.toggle()
+        require("nvim-tree.api").tree.toggle({ find_file = true })
       end,
       desc = "Toggle Nvim Tree",
     },

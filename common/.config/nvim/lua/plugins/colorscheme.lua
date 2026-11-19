@@ -19,9 +19,9 @@ local specs = {
 				which_key = true,
 			},
 			highlight_overrides = {
-				mocha = function(mocha)
+				macchiato = function(c)
 					return {
-						NvimTreeNormal = { bg = mocha.none },
+						NvimTreeNormal = { bg = c.none },
 					}
 				end,
 			},

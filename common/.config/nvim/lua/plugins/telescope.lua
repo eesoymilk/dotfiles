@@ -32,9 +32,61 @@ return {
 				end,
 				desc = "Search for a string in your current working directory lively",
 			},
+			{
+				"<leader>sd",
+				function()
+					require("telescope.builtin").diagnostics()
+				end,
+				desc = "Search diagnostics",
+			},
+			{
+				"<leader>sk",
+				function()
+					require("telescope.builtin").keymaps()
+				end,
+				desc = "Search keymaps",
+			},
+			{
+				"<leader>/",
+				function()
+					require("telescope.builtin").current_buffer_fuzzy_find()
+				end,
+				desc = "Fuzzy search buffer",
+			},
+			{
+				"<leader>gs",
+				function()
+					require("telescope.builtin").git_status()
+				end,
+				desc = "Git status",
+			},
+			{
+				"<leader>,",
+				function()
+					require("telescope.builtin").buffers()
+				end,
+				desc = "Find open buffers",
+			},
+			{
+				"<leader>sw",
+				function()
+					require("telescope.builtin").grep_string()
+				end,
+				desc = "Search word under cursor",
+			},
+			{
+				"<leader>sR",
+				function()
+					require("telescope.builtin").resume()
+				end,
+				desc = "Resume last picker",
+			},
 		},
 		config = function()
 			require("telescope").setup({
+				defaults = {
+					path_display = { "filename_first" },
+				},
 				extensions = {
 					["ui-select"] = {
 						require("telescope.themes").get_dropdown({

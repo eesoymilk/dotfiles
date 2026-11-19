@@ -40,7 +40,7 @@ return {
                     },
                 },
                 hover = {
-                    endable = true,
+                    enabled = true,
                     delay = 200,
                     reveal = { "close" },
                 },

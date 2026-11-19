@@ -2,18 +2,29 @@ return {
   {
     "mason-org/mason.nvim",
     lazy = false,
-    config = true,
+    config = function()
+      require("mason").setup()
+      -- Formatters conform.nvim calls; mason-lspconfig only installs servers.
+      local registry = require("mason-registry")
+      registry.refresh(function()
+        for _, name in ipairs({ "stylua" }) do
+          local pkg = registry.get_package(name)
+          if not pkg:is_installed() then
+            pkg:install()
+          end
+        end
+      end)
+    end,
   },
 
   -- Autocompletion
   {
     "hrsh7th/nvim-cmp",
     event = "InsertEnter",
-    dependencies = { "L3MON4D3/LuaSnip", "onsails/lspkind-nvim" },
+    dependencies = { "onsails/lspkind-nvim" },
     config = function()
       local cmp = require("cmp")
       local lspkind = require("lspkind")
-      local luasnip = require("luasnip")
 
       local has_words_before = function()
         if vim.api.nvim_get_option_value("buftype", { buf = 0 }) == "prompt" then
@@ -27,7 +38,6 @@ return {
       cmp.setup({
         sources = {
           { name = "nvim_lsp" },
-          { name = "luasnip" },
         },
         formatting = {
           format = lspkind.cmp_format({
@@ -45,15 +55,15 @@ return {
           ["<C-u>"] = cmp.mapping.scroll_docs(-4),
           ["<C-d>"] = cmp.mapping.scroll_docs(4),
           ["<C-f>"] = cmp.mapping(function(fallback)
-            if luasnip.locally_jumpable(1) then
-              luasnip.jump(1)
+            if vim.snippet.active({ direction = 1 }) then
+              vim.snippet.jump(1)
             else
               fallback()
             end
           end, { "i", "s" }),
           ["<C-b>"] = cmp.mapping(function(fallback)
-            if luasnip.locally_jumpable(-1) then
-              luasnip.jump(-1)
+            if vim.snippet.active({ direction = -1 }) then
+              vim.snippet.jump(-1)
             else
               fallback()
             end
@@ -143,7 +153,7 @@ return {
       require("mason").setup({})
       -- mason-lspconfig v2 auto-enables installed servers via vim.lsp.enable()
       require("mason-lspconfig").setup({
-        ensure_installed = { "tinymist", "pyright", "ruff" },
+        ensure_installed = { "tinymist", "pyright", "ruff", "ts_ls", "lua_ls" },
       })
     end,
   },
