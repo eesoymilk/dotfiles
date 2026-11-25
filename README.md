@@ -30,7 +30,6 @@ tests/      docker E2E tests (fresh container -> bootstrap -> verify)
 - `.zshrc` is shared; it sources `~/.config/zsh/pre.zsh` (PATH, brew shellenv) first and `~/.config/zsh/post.zsh` (machine extras) near the end. Each OS package provides both.
 - `ghostty`: mac and Ubuntu each ship a full config (Catppuccin Mocha). On Omarchy, `~/.config/ghostty/config` stays Omarchy's own real file, because `omarchy font set` and `omarchy display text size` rewrite it with `sed -i` and the theme switcher includes its palette from it; `install.sh` appends `config-file = ?user.conf` so the stowed `user.conf` overrides load last.
 - Colours: herdr and the oh-my-posh prompt use ANSI colours only, so they take the terminal's palette. That is the active Omarchy theme on Omarchy and Catppuccin elsewhere. nvim reads the Omarchy theme's colorscheme from `~/.local/state/omarchy/current/theme/neovim.lua` and falls back to Catppuccin.
-- `nvim` handles its one OS difference inline: the vimtex PDF viewer (Skim on macOS, Okular elsewhere).
 
 ## 🚀 Install
 

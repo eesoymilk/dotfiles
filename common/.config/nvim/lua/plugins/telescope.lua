@@ -1,3 +1,9 @@
+-- Search from the repo root rather than nvim's cwd, so opening nvim in a
+-- subdirectory still covers the whole project. Falls back to cwd outside git.
+local function project_root()
+	return vim.fs.root(0, ".git") or vim.uv.cwd()
+end
+
 return {
 	{
 		"nvim-telescope/telescope.nvim",
@@ -14,23 +20,23 @@ return {
 			{
 				"<leader>ff",
 				function()
-					require("telescope.builtin").find_files()
+					require("telescope.builtin").find_files({ cwd = project_root() })
 				end,
 				desc = "Find project files",
 			},
 			{
 				"<leader>gf",
 				function()
-					require("telescope.builtin").git_files()
+					require("telescope.builtin").git_files({ cwd = project_root() })
 				end,
 				desc = "Find git files",
 			},
 			{
 				"<leader>lg",
 				function()
-					require("telescope.builtin").live_grep()
+					require("telescope.builtin").live_grep({ cwd = project_root() })
 				end,
-				desc = "Search for a string in your current working directory lively",
+				desc = "Live grep the project",
 			},
 			{
 				"<leader>sd",

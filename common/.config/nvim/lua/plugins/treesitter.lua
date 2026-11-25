@@ -45,8 +45,7 @@ return {
       group = vim.api.nvim_create_augroup("treesitter_attach", {}),
       callback = function(ev)
         local lang = vim.treesitter.language.get_lang(ev.match)
-        -- latex stays out: its parser must be generated from grammar, and
-        -- vimtex highlights tex with its own syntax engine anyway.
+        -- latex stays out: its parser must be generated from grammar.
         if not lang or lang == "latex" then
           return
         end

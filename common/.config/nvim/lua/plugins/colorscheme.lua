@@ -15,6 +15,7 @@ local specs = {
 		opts = {
 			transparent_background = true,
 			integrations = {
+				illuminate = { enabled = true, lsp = true },
 				nvimtree = true,
 				which_key = true,
 			},

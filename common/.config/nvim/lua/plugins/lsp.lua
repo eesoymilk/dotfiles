@@ -143,6 +143,19 @@ return {
         root_markers = { ".git" },
         workspace_required = true,
       })
+      -- Each Python project carries its own uv-managed .venv; point Pyright at
+      -- it so imports resolve per project instead of against the system python.
+      vim.lsp.config("pyright", {
+        before_init = function(_, config)
+          local python = config.root_dir and config.root_dir .. "/.venv/bin/python"
+          if not python or not vim.uv.fs_stat(python) then
+            return
+          end
+          config.settings = vim.tbl_deep_extend("force", config.settings or {}, {
+            python = { pythonPath = python },
+          })
+        end,
+      })
       vim.lsp.config("tinymist", {
         settings = {
           exportPdf = "onType",
