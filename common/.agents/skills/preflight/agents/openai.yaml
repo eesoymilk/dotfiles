@@ -1,0 +1,3 @@
+interface:
+  display_name: "Preflight"
+  short_description: "Review for bugs and code smells, and commit and open a PR when asked"

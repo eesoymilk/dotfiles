@@ -1,3 +1,0 @@
-interface:
-  display_name: "Ship"
-  short_description: "Review, check for AI traces, commit, and open a PR"

@@ -43,15 +43,13 @@ If it does not, say so at the gate; it cannot switch itself, so the user decides
 
 ## Phase 1 - Grill
 
-Interview the user until the spec has no open questions.
-Ask one question at a time, with AskUserQuestion where the harness has it or else in chat, waiting for each answer, and put your recommended answer first.
-Each answer usually spawns follow-ups; keep going until a new round would produce nothing new.
+Invoke the `grilling` skill and run it to completion.
+It works the design tree in rounds: every unblocked question in one numbered round, each with your recommended answer, facts looked up by you and only decisions put to the user.
 
-Before each question, try to answer it yourself from the filesystem, git history, or the codebase.
-Facts are looked up; only decisions go to the user.
-
-The exit criterion: stop only when the spec you are about to write could be handed to an agent with **zero access to this conversation and zero ability to ask you anything**, and that agent would still make every decision the way the user wants.
+When the frontier is empty, apply this stricter exit check before moving on.
+Stop only when the spec you are about to write could be handed to an agent with **zero access to this conversation and zero ability to ask you anything**, and that agent would still make every decision the way the user wants.
 A wrong assumption multiplied across N agents is N times the rework.
+If the check fails, the frontier was not really empty; run another round.
 
 Ambiguities that must be resolved before you leave this phase:
 - Scope boundaries between the parts (what is explicitly out of scope for each).
@@ -73,8 +71,9 @@ Gaps you can fill from the codebase, such as a verification command, you fill yo
 Write `specs/<YYYY-MM-DD>-<slug>/SPEC.md` in the repo.
 For a spec the user brought, copy it there and add only what is missing, leaving their wording alone.
 
-Ensure the artifacts are gitignored.
-Check `.gitignore` for `specs/`; if absent, append it to `.git/info/exclude` rather than editing the user's `.gitignore`.
+The spec is part of the audit trail: it records what was asked, what was decided, and how the result was verified, so it stays tracked unless the repo's own `.gitignore` excludes `specs/`.
+Do not add an exclusion yourself.
+Whether to commit it is the user's decision, made when the work is done.
 
 The spec is the single source of truth for every spawned agent.
 Structure:

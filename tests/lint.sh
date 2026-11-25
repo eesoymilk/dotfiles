@@ -31,7 +31,7 @@ for f in "${zsh_files[@]}"; do
 	zsh -n "$f" || rc=1
 done
 
-skill_scripts=(common/.agents/skills/route/scripts common/.agents/skills/wt-open/scripts common/.agents/skills/wt-cleanup/scripts common/.agents/skills/ship/scripts)
+skill_scripts=(common/.agents/skills/route/scripts common/.agents/skills/wt-open/scripts common/.agents/skills/wt-cleanup/scripts common/.agents/skills/preflight/scripts)
 echo "python (${#skill_scripts[@]} script directories)"
 ruff=(uvx ruff@0.17.3)
 "${ruff[@]}" check --no-cache --target-version py39 --line-length 100 "${skill_scripts[@]}" || rc=1

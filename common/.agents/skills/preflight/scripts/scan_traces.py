@@ -40,7 +40,7 @@ HUNK = re.compile(r"^@@ -\S+ \+(\d+)")
 
 # These files state the rules, so they contain the phrases on purpose.
 EXEMPT_NAMES = {"AGENTS.md", "CLAUDE.md"}
-EXEMPT_DIR = re.compile(r"(^|/)\.agents/skills/ship/")
+EXEMPT_DIR = re.compile(r"(^|/)\.agents/skills/preflight/")
 
 Finding = dict[str, str]
 

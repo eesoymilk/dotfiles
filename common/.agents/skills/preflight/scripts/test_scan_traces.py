@@ -139,10 +139,10 @@ def test_path_with_a_space_keeps_its_exact_name() -> None:
 def test_rule_files_are_exempt() -> None:
     assert is_exempt("AGENTS.md")
     assert is_exempt("x/CLAUDE.md")
-    assert is_exempt("common/.agents/skills/ship/SKILL.md")
+    assert is_exempt("common/.agents/skills/preflight/SKILL.md")
     assert not is_exempt("src/agents.py")
-    assert not is_exempt("app/skills/ship/handler.py")
-    assert not is_exempt("foo.agents/skills/ship/x.py")
+    assert not is_exempt("app/skills/preflight/handler.py")
+    assert not is_exempt("foo.agents/skills/preflight/x.py")
 
 
 def test_clean_branch_passes(tmp_path: Path) -> None:
@@ -203,7 +203,7 @@ def test_line_starting_with_plus_signs_is_scanned(tmp_path: Path) -> None:
 def test_separate_index_is_what_gets_scanned(tmp_path: Path) -> None:
     repo = Repo(tmp_path)
     repo.stage("unrelated.py", "# as discussed\n")
-    other = repo.root / ".git/ship.index"
+    other = repo.root / ".git/preflight.index"
     repo.env["GIT_INDEX_FILE"] = str(other)
     repo.git("read-tree", "HEAD")
     repo.stage("a.py", "x = 1\n")

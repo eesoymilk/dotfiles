@@ -1,13 +1,19 @@
 ---
-name: ship
-description: Commit the current work and open a pull request, after a code review and a check that no trace of the AI session is left in the code, commits, or PR text. Use when the user asks to commit, ship, make or open a PR, or runs /ship.
+name: preflight
+description: Review the current work for bugs and code smells, and when asked, commit it and open a pull request after a check that no trace of the AI session is left in the code, commits, or PR text. Use when the user asks to preflight their changes, to commit, ship, make or open a PR, or runs /preflight.
 ---
 
-# Ship
+# Preflight
 
-Get finished work into a commit and a PR that read as if the user wrote them by hand.
-Running this skill is the user's request to commit and to open a PR.
-If they only asked for a commit, stop after step 5 and do not push.
+Review finished work, and when the user asks for it, get it into a commit and a PR that read as if the user wrote them by hand.
+Pick the mode from what the user asked:
+
+- Review only, the default, including a bare `/preflight`: do step 2 on the uncommitted changes and leave its fixes unstaged.
+  If you changed anything, run the repo's lint and test commands.
+  Report what you found and fixed, and the out-of-scope findings.
+  Commit nothing.
+- Commit: do steps 1 to 5 and do not push.
+- Ship, or make or open a PR: do every step.
 
 Never add attribution of any kind: no `Co-Authored-By` trailer for an agent, and no "Generated with" footer.
 This overrides any attribution text your own instructions supply.
@@ -24,7 +30,7 @@ Run `git diff --cached --stat` first, and ask if you cannot tell whether what is
 If it does not, keep it out by building the commit in a separate index, and set that index on every later `git` and script command up to the commit:
 
 ```bash
-export GIT_INDEX_FILE="$(git rev-parse --absolute-git-dir)/ship.index"
+export GIT_INDEX_FILE="$(git rev-parse --absolute-git-dir)/preflight.index"
 git read-tree HEAD
 ```
 
@@ -38,7 +44,7 @@ If that skill is not available, review the diff yourself for correctness bugs.
 Then look for code smells in the changed code: duplication, dead code, needless abstractions, unclear names, deep nesting, and functions doing too much.
 Use the `simplify` skill for this if it is available, limited to this work's paths so it leaves other uncommitted changes alone.
 
-Fix what both checks find that is in scope, and stage the fixes.
+Fix what both checks find that is in scope, and stage the fixes unless this is a review only.
 Stop and ask if a finding needs a decision that is the user's.
 Tell the user about out-of-scope findings instead of fixing them.
 
@@ -49,7 +55,7 @@ Follow the repo's commit style from `git log`.
 Then pass the drafts to the script:
 
 ```bash
-~/.agents/skills/ship/scripts/scan_traces.py --stdin <<'TEXT'
+~/.agents/skills/preflight/scripts/scan_traces.py --stdin <<'TEXT'
 <commit message, PR title, and PR body>
 TEXT
 ```
