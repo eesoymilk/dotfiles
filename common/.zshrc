@@ -88,6 +88,19 @@ alias ga='git add'
 alias gac='git commit -am'
 alias gc='git commit'
 alias gp='git push'
+# Delta layout. Unified is the default; prefix one git or gh command with `wide`
+# or `narrow` for a one-off, or run `delta-layout wide|narrow|default` to switch
+# every later diff in this shell.
+alias wide='DELTA_FEATURES=wide'
+alias narrow='DELTA_FEATURES=narrow'
+delta-layout() {
+	case "$1" in
+	wide | narrow) export DELTA_FEATURES="$1" ;;
+	default) unset DELTA_FEATURES ;;
+	'') echo "${DELTA_FEATURES:-default}" ;;
+	*) echo "usage: delta-layout [wide|narrow|default]" >&2; return 2 ;;
+	esac
+}
 
 # Shell integrations
 eval "$(fzf --zsh)"
@@ -102,8 +115,8 @@ case "$(uname -s)" in
   *)      export PNPM_HOME="$HOME/.local/share/pnpm" ;;
 esac
 case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
+  *":$PNPM_HOME/bin:"*) ;;
+  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
 esac
 # pnpm end
 

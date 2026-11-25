@@ -3,3 +3,5 @@
 session.json
 session-history.json
 release-notes.json
+herdr.sock.agent
+session-snapshots/

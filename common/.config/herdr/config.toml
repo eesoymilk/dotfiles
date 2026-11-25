@@ -31,6 +31,13 @@ swap_pane_right = "prefix+shift+l"
 # Jump straight to agent row N in the sidebar.
 focus_agent = "prefix+alt+1..9"
 
+# Break the focused pane out into its own tab, like tmux break-pane.
+[[keys.command]]
+key = "prefix+alt+b"
+type = "shell"
+command = "herdr pane move \"$(herdr pane current | jq -r .result.pane.pane_id)\" --new-tab"
+description = "break pane to new tab"
+
 # goto stays at herdr's default prefix+g (fuzzy jump picker).
 # TUI popups on the prefix+alt layer, matching herdr's documented example.
 [[keys.command]]
@@ -56,6 +63,15 @@ command = "yazi"
 width = "90%"
 height = "90%"
 description = "yazi file manager"
+
+# Live LLM subscription quota windows; check runway before fanning out agents.
+[[keys.command]]
+key = "prefix+alt+q"
+type = "popup"
+command = "quota-axi --tui"
+width = "90%"
+height = "90%"
+description = "quota-axi"
 
 # Launch Claude Code in auto permission mode in a new pane.
 [[keys.command]]

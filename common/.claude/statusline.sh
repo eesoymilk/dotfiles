@@ -3,7 +3,7 @@
 # everything fits, otherwise two:
 #
 #   row 1, where:     model, agent, directory, git, session
-#   row 2, resources: context, usage limits, churn
+#   row 2, resources: context, usage limits (or cost), churn
 #
 # Width-aware by necessity. Claude Code captures stdout rather than handing the
 # script a terminal, so `tput cols` sees nothing here; COLUMNS is exported for
@@ -40,7 +40,7 @@ fi
 # effort) would silently shift every field after it by one.
 IFS=$'\037' read -r MODEL EFFORT FAST AGENT STYLE SESSION DIR EXTRA_DIRS \
 	PCT CTX_USED CTX_SIZE LIMIT_5H RESET_5H LIMIT_7D RESET_7D \
-	ADDED REMOVED < <(
+	COST ADDED REMOVED < <(
 		jq -r '[
 		(.model.display_name // "?"),
 		(.effort.level // ""),
@@ -61,6 +61,7 @@ IFS=$'\037' read -r MODEL EFFORT FAST AGENT STYLE SESSION DIR EXTRA_DIRS \
 		(if .rate_limits.seven_day.used_percentage == null then -1
 		 else (.rate_limits.seven_day.used_percentage | floor) end),
 		(.rate_limits.seven_day.resets_at // 0),
+		(.cost.total_cost_usd // 0),
 		(.cost.total_lines_added // 0),
 		(.cost.total_lines_removed // 0)
 	] | map(tostring) | join("\u001f")' <<<"$json"
@@ -242,6 +243,12 @@ add_limit() {
 }
 add_limit 5h "$LIMIT_5H" "$RESET_5H" 0
 add_limit week "$LIMIT_7D" "$RESET_7D" 1
+
+# Subscriptions report usage limits; pay-per-token accounts get the session cost instead.
+if [ "$LIMIT_5H" -lt 0 ] && [ "$LIMIT_7D" -lt 0 ]; then
+	cost=$(printf '$%.2f' "$COST" 2>/dev/null || true)
+	[ -n "$cost" ] && [ "$cost" != '$0.00' ] && add "${C_DIM}${cost}${C_RESET}"
+fi
 
 if [ "$ADDED" != "0" ] || [ "$REMOVED" != "0" ]; then
 	add "${C_OK}+${ADDED}${C_RESET} ${C_CRIT}-${REMOVED}${C_RESET}"

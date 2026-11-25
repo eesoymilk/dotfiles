@@ -13,6 +13,13 @@ pager: delta
 # Aliases allow you to create nicknames for gh commands
 aliases:
     co: pr checkout
+    # gh show [<number> | <url> | <branch>]: the PR's commits one by one with
+    # their patches, like `git log -p base..head`, rendered by git's pager.
+    show: |-
+        !set -e
+        set -- $(gh pr view "$@" --json number,baseRefName -q '"\(.number) \(.baseRefName)"')
+        git fetch -q origin "+refs/pull/$1/head:refs/remotes/origin/pr/$1" "$2"
+        git log -p --reverse "origin/$2..origin/pr/$1"
 # The path to a unix socket through which to send HTTP connections. If blank, HTTP traffic will be handled by net/http.DefaultTransport.
 http_unix_socket:
 # What web browser gh should use when opening URLs. If blank, will refer to environment.

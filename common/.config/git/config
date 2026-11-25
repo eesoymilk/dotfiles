@@ -9,6 +9,18 @@
 [delta]
     navigate = true
     line-numbers = true
+    features = narrow
+
+# The layout lives in features rather than the main section because delta
+# cannot switch a main-section boolean off per invocation. DELTA_FEATURES
+# replaces the feature list, so `DELTA_FEATURES=wide git diff` (or `gh show`)
+# renders side-by-side for one command; the `wide`, `narrow`, and
+# `delta-layout` shell helpers wrap that.
+[delta "narrow"]
+    side-by-side = false
+
+[delta "wide"]
+    side-by-side = true
 
 [merge]
     conflictstyle = zdiff3
